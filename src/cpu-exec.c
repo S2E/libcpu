@@ -281,7 +281,15 @@ static bool process_interrupt_request(CPUArchState *env) {
         env->exception_index = EXCP_DEBUG;
         cpu_loop_exit(env);
     }
-
+#if defined(TARGET_ARM)
+    if (interrupt_request & CPU_INTERRUPT_HALT) {
+        env->interrupt_request &= ~CPU_INTERRUPT_HALT;
+        env->halted = 1;
+        env->exception_index = EXCP_HLT;
+        cpu_loop_exit(env);
+    }
+#endif
+#if defined(TARGET_I386)
     if (interrupt_request & CPU_INTERRUPT_INIT) {
         svm_check_intercept(env, SVM_EXIT_INIT);
         do_cpu_init(env);
@@ -319,7 +327,6 @@ static bool process_interrupt_request(CPUArchState *env) {
 #ifdef SE_KVM_DEBUG_IRQ
                 DPRINTF("Handling interrupt %d\n", intno);
 #endif
-
                 do_interrupt_x86_hardirq(env, intno, 1);
             }
 
@@ -338,7 +345,28 @@ static bool process_interrupt_request(CPUArchState *env) {
             has_interrupt = true;
         }
     }
-
+#elif defined(TARGET_ARM)
+    if (interrupt_request & CPU_INTERRUPT_FIQ && !(env->uncached_cpsr & CPSR_F)) {
+        env->exception_index = EXCP_FIQ;
+        do_interrupt(env);
+        has_interrupt = true;
+    }
+    /* ARMv7-M interrupt return works by loading a magic value
+       into the PC.  On real hardware the load causes the
+       return to occur.  The qemu implementation performs the
+       jump normally, then does the exception return when the
+       CPU tries to execute code at the magic address.
+       This will cause the magic PC value to be pushed to
+       the stack if an interrupt occurred at the wrong time.
+       We avoid this by disabling interrupts when
+       pc contains a magic address.  */
+    if (interrupt_request & CPU_INTERRUPT_HARD &&
+        ((IS_M(env) && env->regs[15] < 0xfffffff0) || !(env->uncached_cpsr & CPSR_I))) {
+        env->exception_index = EXCP_IRQ;
+        do_interrupt(env);
+        has_interrupt = true;
+    }
+#endif
     /* Don't use the cached interrupt_request value,
           do_interrupt may have updated the EXITTB flag. */
     if (env->interrupt_request & CPU_INTERRUPT_EXITTB) {
@@ -404,12 +432,20 @@ static bool execution_loop(CPUArchState *env) {
             // TODO: add an option to customize which regs to print
             log_cpu_state(env, X86_DUMP_GPREGS);
 #endif
+            log_cpu_state(env, 0);
         }
 #endif /* DEBUG_DISAS || CONFIG_DEBUG_EXEC */
 
         next_tb = fetch_and_run_tb(next_tb, env);
 
-        if (env->kvm_request_interrupt_window && (env->mflags & IF_MASK)) {
+        if (env->kvm_request_interrupt_window &&
+#if defined(TARGET_I386)
+            (env->mflags & IF_MASK)) {
+#elif defined(TARGET_ARM)
+            !(env->uncached_cpsr & CPSR_I)) {
+#else
+#error unsupported target CPU
+#endif
             env->kvm_request_interrupt_window = 0;
             return true;
         }

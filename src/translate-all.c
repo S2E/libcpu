@@ -152,15 +152,19 @@ void cpu_gen_init(void) {
     extern CPUArchState *env;
     tcg_ctx.tcg_struct_size = sizeof(tcg_ctx);
     tcg_ctx.env_ptr = (uintptr_t) &env;
-    tcg_ctx.env_offset_eip = offsetof(CPUArchState, eip);
-    tcg_ctx.env_sizeof_eip = sizeof(env->eip);
+#if defined(TARGET_I386)
+    tcg_ctx.env_offset_pc = offsetof(CPUArchState, eip);
+    tcg_ctx.env_sizeof_pc = sizeof(env->eip);
     tcg_ctx.env_offset_ccop = offsetof(CPUArchState, cc_op);
     tcg_ctx.env_sizeof_ccop = sizeof(env->cc_op);
     tcg_ctx.env_offset_df = offsetof(CPUArchState, df);
+#elif defined(TARGET_ARM)
+#else
+#error unsupported target CPU
+#endif
     tcg_ctx.env_offset_tlb[0] = offsetof(CPUArchState, tlb_table[0][0]);
     tcg_ctx.env_offset_tlb[1] = offsetof(CPUArchState, tlb_table[1][0]);
     tcg_ctx.env_offset_tlb[2] = offsetof(CPUArchState, tlb_table[2][0]);
-
     tcg_ctx.tlbe_size = sizeof(CPUTLBEntry);
     tcg_ctx.tlbe_offset_addend = offsetof(CPUTLBEntry, addend);
     tcg_ctx.tlbe_offset_addr_read = offsetof(CPUTLBEntry, addr_read);

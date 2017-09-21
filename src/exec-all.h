@@ -91,10 +91,10 @@ void gen_intermediate_code_pc(CPUArchState *env, struct TranslationBlock *tb);
 int cpu_gen_flush_needed(void);
 void cpu_gen_flush(void);
 void cpu_gen_init_opc(void);
-void se_restore_state_to_opc(CPUX86State *env, TranslationBlock *tb, target_ulong pc, int cc_op, target_ulong next_pc);
+void se_restore_state_to_opc(CPUArchState *env, TranslationBlock *tb, target_ulong pc, int cc_op, target_ulong next_pc);
 #endif
 void restore_state_to_opc(CPUArchState *env, struct TranslationBlock *tb, int pc_pos);
-int restore_state_to_next_pc(CPUX86State *env, TranslationBlock *tb);
+int restore_state_to_next_pc(CPUArchState *env, TranslationBlock *tb);
 
 #ifdef CONFIG_SYMBEX
 int cpu_gen_llvm(CPUArchState *env, TranslationBlock *tb);
