@@ -146,7 +146,7 @@ void cpu_state_reset(CPUX86State *env) {
     cpu_x86_load_seg_cache(env, R_GS, 0, 0, 0xffff, DESC_P_MASK | DESC_S_MASK | DESC_W_MASK | DESC_A_MASK);
 
     env->eip = 0xfff0;
-    WR_se_eip(env, 0xfff0);
+    WR_se_pc(env, 0xfff0);
     env->regs[R_EDX] = env->cpuid_version;
 
     WR_cpu(env, cc_op, CC_OP_EFLAGS);

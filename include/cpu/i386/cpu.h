@@ -17,16 +17,17 @@
 /// License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __LIBCPU_I386_CPU_H__
-
 #define __LIBCPU_I386_CPU_H__
 
 #define CPUArchState struct CPUX86State
+
+#include <stdbool.h>
 
 #include <cpu/common.h>
 #include <cpu/interrupt.h>
 #include <cpu/types.h>
 #include <fpu/softfloat.h>
-#include <stdbool.h>
+
 #include "defs.h"
 
 typedef struct SegmentCache {
@@ -85,8 +86,7 @@ typedef struct CPUX86State {
     target_ulong cc_dst;
     target_ulong cc_tmp; /* temporary for rcr/rcl */
 
-    /* symbex note: the contents of the structure from this point
-       can never be symbolic. */
+    /* symbex note: the contents of the structure from this point can never be symbolic. */
     target_ulong eip;
 
     int32_t df;          /* D flag : 1 if D = 0, -1 if D = 1 */
