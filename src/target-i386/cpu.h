@@ -107,12 +107,67 @@ static inline void __WR_env_raw(CPUX86State *cpuState, unsigned offset, target_u
     }
 }
 
+static inline floatx80 __RR_env_floatx80(CPUX86State *cpuState, unsigned offset) {
+    if (likely(*g_sqi.mode.fast_concrete_invocation)) {
+        return *(floatx80*) ((uint8_t *) cpuState + offset);
+    }
+    floatx80 result;
+    g_sqi.regs.read_concrete(offset, (uint8_t *) &result, sizeof(result));
+    return result;
+}
+
+static inline void __WR_env_floatx80(CPUX86State *cpuState, unsigned offset, floatx80 value) {
+    if (likely(*g_sqi.mode.fast_concrete_invocation)) {
+        *(floatx80 *) ((uint8_t *) cpuState + offset) = value;
+    } else {
+       g_sqi.regs.write_concrete(offset, (uint8_t *) &value, sizeof(value));
+    }
+}
+
+static inline void __WR_env_large(CPUX86State *cpuState, unsigned offset, void* buf, unsigned size) {
+    if (likely(*g_sqi.mode.fast_concrete_invocation)) {
+        __builtin_memcpy((uint8_t *) cpuState + offset, buf, size);
+    } else {
+        g_sqi.regs.write_concrete(offset, (uint8_t *) buf, size);
+    }
+}
+
+target_ulong __RR_cpu_dyn(void* p, unsigned size);
+target_ulong __WR_cpu_dyn(void* p, unsigned size, target_ulong v);
+
 #define RR_cpu(cpu, reg) ((__typeof__(cpu->reg)) __RR_env_raw(cpu, offsetof(CPUX86State, reg), sizeof(cpu->reg)))
 
 #define WR_cpu(cpu, reg, value) __WR_env_raw(cpu, offsetof(CPUX86State, reg), (target_ulong) value, sizeof(cpu->reg))
+
+#define RR_cpu_fp80(cpu, reg) (__RR_env_floatx80(cpu, offsetof(CPUX86State, reg)))
+#define WR_cpu_fp80(cpu, reg, value) __WR_env_floatx80(cpu, offsetof(CPUX86State, reg), value)
+
+#define RR_cpu_dyn(p, size) ((__typeof__(*p)) __RR_cpu_dyn(p, size))
+#define WR_cpu_dyn(p, size, v) __WR_cpu_dyn(p, size, v)
+
+#if 1
+#define WR_reg(r, v)                    \
+    int off = (void*)r - (void*)env;    \
+    assert(off > 0 && off < offsetof(CPUArchState, eip) && "invalid wrapped operation");\
+    __WR_env_large(env, off, &v, sizeof(v))
 #else
+#define WR_reg(r, v) int off = (void*)r - (void*)env; __WR_env_large(env, off, &v, sizeof(v))
+#endif
+
+#else
+
 #define RR_cpu(cpu, reg) cpu->reg
 #define WR_cpu(cpu, reg, value) cpu->reg = value
+
+#define RR_cpu_fp80(cpu, reg) cpu->reg
+#define WR_cpu_fp80(cpu, reg, value) cpu->reg = value
+
+#define RR_cpu_dyn(p, size) (*p)
+#define WR_cpu_dyn(p, size, v) *p = v
+
+#define WR_reg(r, v) *r = v
+
+#define __RR_cpu_dyn(p, size) *p
 #endif
 
 #ifdef ENABLE_PRECISE_EXCEPTION_DEBUGGING
@@ -308,6 +363,21 @@ static inline int hw_breakpoint_len(unsigned long dr7, int index) {
 #define CC_DST_W(v) (WR_cpu(env, cc_dst, v))
 #define CC_OP_W(v) (WR_cpu(env, cc_op, v))
 
+#define FPSTT env->fpstt
+#define FPSTT_W(v) env->fpstt = v
+
+#define FPUS env->fpus
+#define FPUS_W(v) env->fpus = v
+
+#define FPUC env->fpuc
+#define FPUC_W(v) env->fpuc = v
+
+#define MXCSR env->mxcsr
+#define MXCSR_W(v) env->mxcsr = v
+
+#define FPTAGS(i) env->fptags[i]
+#define FPTAGS_W(i, v) env->fptags[i] = v
+
 #define DF (env->df)
 #define DF_W(v) (env->df = (v))
 
@@ -315,10 +385,22 @@ static inline int hw_breakpoint_len(unsigned long dr7, int index) {
 #define EIP (env->eip)
 
 /* float macros */
+#if 0
 #define FT0 (env->ft0)
 #define ST0 (env->fpregs[env->fpstt].d)
 #define ST(n) (env->fpregs[(env->fpstt + (n)) & 7].d)
+#endif
+#define FT0 (RR_cpu_fp80(env, ft0))
+#define FT0_W(v) (WR_cpu_fp80(env, ft0, v))
+
+#define ST0 (RR_cpu_fp80(env, fpregs[FPSTT].d))
+#define ST0_W(v) (WR_cpu_fp80(env, fpregs[FPSTT].d, v))
+
+#define ST(n) (RR_cpu_fp80(env, fpregs[(FPSTT+ (n)) & 7].d))
+#define ST_W(n, v) (WR_cpu_fp80(env, fpregs[(FPSTT + (n)) & 7].d, v))
+
 #define ST1 ST(1)
+#define ST1_W(v) ST_W(1, v)
 
 /* translate.c */
 void optimize_flags_init(void);

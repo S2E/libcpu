@@ -85,6 +85,18 @@ typedef struct CPUX86State {
     target_ulong cc_dst;
     target_ulong cc_tmp; /* temporary for rcr/rcl */
 
+    FPReg fpregs[8];
+
+    /* emulator internal variables */
+    float_status fp_status;
+    floatx80 ft0;
+
+    float_status mmx_status; /* for 3DNow! float ops */
+    float_status sse_status;
+    XMMReg xmm_regs[CPU_NB_REGS];
+    XMMReg xmm_t0;
+    MMXReg mmx_t0;
+
     /* symbex note: the contents of the structure from this point
        can never be symbolic. */
     target_ulong eip;
@@ -113,22 +125,13 @@ typedef struct CPUX86State {
     uint16_t fpus;
     uint16_t fpuc;
     uint8_t fptags[8]; /* 0 = valid, 1 = empty */
-    FPReg fpregs[8];
+
     /* KVM-only so far */
     uint16_t fpop;
     uint64_t fpip;
     uint64_t fpdp;
 
-    /* emulator internal variables */
-    float_status fp_status;
-    floatx80 ft0;
-
-    float_status mmx_status; /* for 3DNow! float ops */
-    float_status sse_status;
     uint32_t mxcsr;
-    XMMReg xmm_regs[CPU_NB_REGS];
-    XMMReg xmm_t0;
-    MMXReg mmx_t0;
 
     /* sysenter registers */
     uint32_t sysenter_cs;
