@@ -44,13 +44,15 @@
 #define QEMU_CLOCK_HOST 2
 
 struct CPUClock {
-    int type;
+ int type;
     int enabled;
 
     CPUTimer *active_timers;
 
     int64_t last;
-};
+}
+
+;
 
 struct CPUTimer {
     CPUClock *clock;
