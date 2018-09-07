@@ -43,8 +43,8 @@ static inline void _c_neg128(uint64_t *plow, uint64_t *phigh) {
     _c_add128(plow, phigh, 1, 0);
 }
 
-/* Unsigned 64x64 -> 128 multiplication */
-static inline void mulu64(uint64_t *plow, uint64_t *phigh, uint64_t a, uint64_t b) {
+/* Unsigned 64x64 -> 128 multiplication emulated in software */
+static inline void mulu64e(uint64_t *plow, uint64_t *phigh, uint64_t a, uint64_t b) {
     uint32_t a0, a1, b0, b1;
     uint64_t v;
 
@@ -68,8 +68,8 @@ static inline void mulu64(uint64_t *plow, uint64_t *phigh, uint64_t a, uint64_t 
     *phigh += v;
 }
 
-/* Signed 64x64 -> 128 multiplication */
-static inline void muls64(uint64_t *plow, uint64_t *phigh, int64_t a, int64_t b) {
+/* Signed 64x64 -> 128 multiplication emulated in software */
+static inline void muls64e(uint64_t *plow, uint64_t *phigh, int64_t a, int64_t b) {
     int sa, sb;
 
     sa = (a < 0);
@@ -78,20 +78,36 @@ static inline void muls64(uint64_t *plow, uint64_t *phigh, int64_t a, int64_t b)
     sb = (b < 0);
     if (sb)
         b = -b;
-    mulu64(plow, phigh, a, b);
+    mulu64e(plow, phigh, a, b);
     if (sa ^ sb) {
         _c_neg128(plow, phigh);
     }
 }
-#elif defined(__x86_64__)
+
+#if defined(__x86_64__)
 #define __HAVE_FAST_MULU64__
+/* Unsigned 64x64 -> 128 multiplication */
 static inline void mulu64(uint64_t *plow, uint64_t *phigh, uint64_t a, uint64_t b) {
-    __asm__("mul %0\n\t" : "=d"(*phigh), "=a"(*plow) : "a"(a), "0"(b));
+    __uint128_t r = (__uint128_t) a * b;
+    *plow = r;
+    *phigh = r >> 64;
 }
+
 #define __HAVE_FAST_MULS64__
+/* Signed 64x64 -> 128 multiplication */
 static inline void muls64(uint64_t *plow, uint64_t *phigh, int64_t a, int64_t b) {
-    __asm__("imul %0\n\t" : "=d"(*phigh), "=a"(*plow) : "a"(a), "0"(b));
+    __int128_t r = (__int128_t) a * b;
+    *plow = r;
+    *phigh = r >> 64;
 }
+#else /* defined(__x86_64__) */
+
+/* 32-bit builds can't use __int128_t */
+#define mulu64 mulu64e
+#define muls64 muls64e
+
+#endif /* defined(__x86_64__) */
+
 #else
 void muls64(uint64_t *phigh, uint64_t *plow, int64_t a, int64_t b);
 void mulu64(uint64_t *phigh, uint64_t *plow, uint64_t a, uint64_t b);
