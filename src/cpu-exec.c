@@ -431,6 +431,7 @@ static bool execution_loop(CPUArchState *env) {
             // It's too heavy to log all cpu state, usually gp regs are enough
             // TODO: add an option to customize which regs to print
             log_cpu_state(env, X86_DUMP_GPREGS);
+
 #endif
             log_cpu_state(env, 0);
         }
