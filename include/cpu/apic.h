@@ -19,7 +19,13 @@
 #ifndef APIC_H
 #define APIC_H
 
+#if defined(TARGET_I386)
 #include <cpu/i386/cpu.h>
+#elif defined(TARGET_ARM)
+#include <cpu/arm/cpu.h>
+#else
+#error unsupported target CPU
+#endif
 #include <cpu/types.h>
 #include <inttypes.h>
 

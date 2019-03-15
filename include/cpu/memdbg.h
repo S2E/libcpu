@@ -19,7 +19,13 @@
 #define __LIBCPU_MEMDBG_H__
 
 #include <cpu/config.h>
+#if defined(TARGET_I386)
 #include <cpu/i386/cpu.h>
+#elif defined(TARGET_ARM)
+#include <cpu/arm/cpu.h>
+#else
+#error unsupported target CPU
+#endif
 #include <inttypes.h>
 
 void cpu_host_memory_rw(uintptr_t source, uintptr_t dest, int length, int is_write);
