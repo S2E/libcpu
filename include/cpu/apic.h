@@ -19,6 +19,8 @@
 #ifndef APIC_H
 #define APIC_H
 
+#include <cpu/config.h>
+
 #if defined(TARGET_I386)
 #include <cpu/i386/cpu.h>
 #elif defined(TARGET_ARM)
@@ -28,6 +30,7 @@
 #endif
 #include <cpu/types.h>
 #include <inttypes.h>
+
 
 struct DeviceState;
 typedef struct DeviceState DeviceState;
