@@ -143,8 +143,6 @@ typedef struct CPUARMState {
     uint32_t teecr;
     uint32_t teehbr;
 
-    /* Internal CPU feature flags.  */
-    uint32_t features;
 
     /* VFP coprocessor state.  */
     struct {
@@ -191,7 +189,9 @@ typedef struct CPUARMState {
     CPU_COMMON
 
     /* These fields after the common ones so they are preserved on reset.  */
-
+        
+    /* Internal CPU feature flags.  */
+    uint32_t features;
     /* Coprocessor IO used by peripherals */
     struct {
         ARMReadCPFunc *cp_read;
