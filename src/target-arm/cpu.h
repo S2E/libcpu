@@ -395,7 +395,7 @@ static inline void cpu_pc_from_tb(CPUARMState *env, TranslationBlock *tb) {
 
 /* Load an instruction and return it in the standard little-endian order */
 static inline uint32_t arm_ldl_code(uint32_t addr, bool do_swap) {
-    uint32_t insn = ldl_code(addr);
+    uint32_t insn = ldl_raw(addr);
     if (do_swap) {
         return bswap32(insn);
     }
@@ -404,7 +404,7 @@ static inline uint32_t arm_ldl_code(uint32_t addr, bool do_swap) {
 
 /* Ditto, for a halfword (Thumb) instruction */
 static inline uint16_t arm_lduw_code(uint32_t addr, bool do_swap) {
-    uint16_t insn = lduw_code(addr);
+    uint16_t insn = lduw_raw(addr);
     if (do_swap) {
         return bswap16(insn);
     }

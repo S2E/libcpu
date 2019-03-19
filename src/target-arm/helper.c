@@ -16,8 +16,19 @@
 /// You should have received a copy of the GNU Library General Public
 /// License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
-#include "helper.h"
+#include <glib.h>
+
 #include "cpu.h"
+
+#include <cpu/memdbg.h>
+
+#include "helper.h"
+
+#include "host-utils.h"
+#include "loader.h"
+
+int semihosting_enabled = 0;
+int smp_cpus = 1;
 
 static uint32_t cortexa15_cp15_c0_c1[8] = {0x00001131, 0x00011011, 0x02010555, 0x00000000,
                                            0x10201105, 0x20000000, 0x01240000, 0x02102211};
@@ -283,8 +294,8 @@ void cpu_state_reset(CPUARMState *env) {
     uint32_t id;
     uint32_t tmp = 0;
 
-    if (qemu_loglevel_mask(CPU_LOG_RESET)) {
-        qemu_log("CPU Reset (CPU %d)\n", env->cpu_index);
+    if (libcpu_loglevel_mask(CPU_LOG_RESET)) {
+        libcpu_log("CPU Reset (CPU %d)\n", env->cpu_index);
         log_cpu_state(env, 0);
     }
 
@@ -333,70 +344,70 @@ void cpu_state_reset(CPUARMState *env) {
     tb_flush(env);
 }
 
-static int vfp_gdb_get_reg(CPUARMState *env, uint8_t *buf, int reg) {
-    int nregs;
-
-    /* VFP data registers are always little-endian.  */
-    nregs = arm_feature(env, ARM_FEATURE_VFP3) ? 32 : 16;
-    if (reg < nregs) {
-        stfq_le_p(buf, env->vfp.regs[reg]);
-        return 8;
-    }
-    if (arm_feature(env, ARM_FEATURE_NEON)) {
-        /* Aliases for Q regs.  */
-        nregs += 16;
-        if (reg < nregs) {
-            stfq_le_p(buf, env->vfp.regs[(reg - 32) * 2]);
-            stfq_le_p(buf + 8, env->vfp.regs[(reg - 32) * 2 + 1]);
-            return 16;
-        }
-    }
-    switch (reg - nregs) {
-        case 0:
-            stl_p(buf, env->vfp.xregs[ARM_VFP_FPSID]);
-            return 4;
-        case 1:
-            stl_p(buf, env->vfp.xregs[ARM_VFP_FPSCR]);
-            return 4;
-        case 2:
-            stl_p(buf, env->vfp.xregs[ARM_VFP_FPEXC]);
-            return 4;
-    }
-    return 0;
-}
-
-static int vfp_gdb_set_reg(CPUARMState *env, uint8_t *buf, int reg) {
-    int nregs;
-
-    nregs = arm_feature(env, ARM_FEATURE_VFP3) ? 32 : 16;
-    if (reg < nregs) {
-        env->vfp.regs[reg] = ldfq_le_p(buf);
-        return 8;
-    }
-    if (arm_feature(env, ARM_FEATURE_NEON)) {
-        nregs += 16;
-        if (reg < nregs) {
-            env->vfp.regs[(reg - 32) * 2] = ldfq_le_p(buf);
-            env->vfp.regs[(reg - 32) * 2 + 1] = ldfq_le_p(buf + 8);
-            return 16;
-        }
-    }
-    switch (reg - nregs) {
-        case 0:
-            env->vfp.xregs[ARM_VFP_FPSID] = ldl_p(buf);
-            return 4;
-        case 1:
-            env->vfp.xregs[ARM_VFP_FPSCR] = ldl_p(buf);
-            return 4;
-        case 2:
-            env->vfp.xregs[ARM_VFP_FPEXC] = ldl_p(buf) & (1 << 30);
-            return 4;
-    }
-    return 0;
-}
+//static int vfp_gdb_get_reg(CPUARMState *env, uint8_t *buf, int reg) {
+//    int nregs;
+//
+//    /* VFP data registers are always little-endian.  */
+//    nregs = arm_feature(env, ARM_FEATURE_VFP3) ? 32 : 16;
+//    if (reg < nregs) {
+//        stfq_le_p(buf, env->vfp.regs[reg]);
+//        return 8;
+//    }
+//    if (arm_feature(env, ARM_FEATURE_NEON)) {
+//        /* Aliases for Q regs.  */
+//        nregs += 16;
+//        if (reg < nregs) {
+//            stfq_le_p(buf, env->vfp.regs[(reg - 32) * 2]);
+//            stfq_le_p(buf + 8, env->vfp.regs[(reg - 32) * 2 + 1]);
+//            return 16;
+//        }
+//    }
+//    switch (reg - nregs) {
+//        case 0:
+//            stl_p(buf, env->vfp.xregs[ARM_VFP_FPSID]);
+//            return 4;
+//        case 1:
+//            stl_p(buf, env->vfp.xregs[ARM_VFP_FPSCR]);
+//            return 4;
+//        case 2:
+//            stl_p(buf, env->vfp.xregs[ARM_VFP_FPEXC]);
+//            return 4;
+//    }
+//    return 0;
+//}
+//
+//static int vfp_gdb_set_reg(CPUARMState *env, uint8_t *buf, int reg) {
+//    int nregs;
+//
+//    nregs = arm_feature(env, ARM_FEATURE_VFP3) ? 32 : 16;
+//    if (reg < nregs) {
+//        env->vfp.regs[reg] = ldfq_le_p(buf);
+//        return 8;
+//    }
+//    if (arm_feature(env, ARM_FEATURE_NEON)) {
+//        nregs += 16;
+//        if (reg < nregs) {
+//            env->vfp.regs[(reg - 32) * 2] = ldfq_le_p(buf);
+//            env->vfp.regs[(reg - 32) * 2 + 1] = ldfq_le_p(buf + 8);
+//            return 16;
+//        }
+//    }
+//    switch (reg - nregs) {
+//        case 0:
+//            env->vfp.xregs[ARM_VFP_FPSID] = ldl_p(buf);
+//            return 4;
+//        case 1:
+//            env->vfp.xregs[ARM_VFP_FPSCR] = ldl_p(buf);
+//            return 4;
+//        case 2:
+//            env->vfp.xregs[ARM_VFP_FPEXC] = ldl_p(buf) & (1 << 30);
+//            return 4;
+//    }
+//    return 0;
+//}
 
 CPUARMState *cpu_arm_init(const char *cpu_model) {
-    ARMCPU *cpu;
+
     CPUARMState *env;
     uint32_t id;
     static int inited = 0;
@@ -404,8 +415,7 @@ CPUARMState *cpu_arm_init(const char *cpu_model) {
     id = cpu_arm_find_by_name(cpu_model);
     if (id == 0)
         return NULL;
-    cpu = ARM_CPU(object_new(TYPE_ARM_CPU));
-    env = &cpu->env;
+    env = g_malloc0(sizeof(CPUARMState));
     cpu_exec_init(env);
     if (tcg_enabled() && !inited) {
         inited = 1;
@@ -415,13 +425,15 @@ CPUARMState *cpu_arm_init(const char *cpu_model) {
     env->cpu_model_str = cpu_model;
     env->cp15.c0_cpuid = id;
     cpu_state_reset(env);
-    if (arm_feature(env, ARM_FEATURE_NEON)) {
-        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 51, "arm-neon.xml", 0);
-    } else if (arm_feature(env, ARM_FEATURE_VFP3)) {
-        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 35, "arm-vfp3.xml", 0);
-    } else if (arm_feature(env, ARM_FEATURE_VFP)) {
-        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 19, "arm-vfp.xml", 0);
-    }
+
+//    if (arm_feature(env, ARM_FEATURE_NEON)) {
+//        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 51, "arm-neon.xml", 0);
+//    } else if (arm_feature(env, ARM_FEATURE_VFP3)) {
+//        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 35, "arm-vfp3.xml", 0);
+//    } else if (arm_feature(env, ARM_FEATURE_VFP)) {
+//        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 19, "arm-vfp.xml", 0);
+//    }
+
     qemu_init_vcpu(env);
     return env;
 }
@@ -565,7 +577,9 @@ uint32_t HELPER(uxtb16)(uint32_t x) {
 }
 
 uint32_t HELPER(clz)(uint32_t x) {
-    return clz32(x);
+    uint32_t res;
+    res= (uint32_t)clz32(x);
+	return res;
 }
 
 int32_t HELPER(sdiv)(int32_t num, int32_t den) {

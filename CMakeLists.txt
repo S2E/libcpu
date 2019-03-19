@@ -54,7 +54,6 @@ file(WRITE ${CONFIG_TARGET_H}
 #define TARGET_INT_ALIGNMENT 4
 #define TARGET_LONG_ALIGNMENT 4
 #define TARGET_LLONG_ALIGNMENT 8
-#define TARGET_PHYS_ADDR_BITS 64
 #define CONFIG_SOFTMMU 1
 "
 )
@@ -73,6 +72,7 @@ if(WITH_TARGET MATCHES "i386")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_ARCH \"i386\"\n")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_I386 1\n")
     file(APPEND ${CONFIG_TARGET_H} "#define CONFIG_I386_DIS 1\n")
+    file(APPEND ${CONFIG_TARGET_H} "#define TARGET_PHYS_ADDR_BITS 64\n")
 
     set(TARGET_DIR "target-i386")
 elseif(WITH_TARGET MATCHES "x86_64")
@@ -80,12 +80,14 @@ elseif(WITH_TARGET MATCHES "x86_64")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_I386 1\n")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_X86_64 1\n")
     file(APPEND ${CONFIG_TARGET_H} "#define CONFIG_I386_DIS 1\n")
+	file(APPEND ${CONFIG_TARGET_H} "#define TARGET_PHYS_ADDR_BITS 64\n")
 
     set(TARGET_DIR "target-i386")
 elseif(WITH_TARGET MATCHES "arm")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_ARCH \"arm\"\n")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_ARM 1\n")
     file(APPEND ${CONFIG_TARGET_H} "#define CONFIG_ARM_DIS 1\n")
+	file(APPEND ${CONFIG_TARGET_H} "#define TARGET_PHYS_ADDR_BITS 64\n")
 
     set(TARGET_DIR "target-arm")
 else()
