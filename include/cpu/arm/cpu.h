@@ -203,6 +203,9 @@ typedef struct CPUARMState {
 
     /* For KVM */
     int kvm_request_interrupt_window;
-} CPUARMState;
+    int kvm_irq;
 
+} CPUARMState;
+CPUARMState *cpu_arm_init(const char *cpu_model);
+int cpu_arm_exec(CPUARMState *s);
 #endif

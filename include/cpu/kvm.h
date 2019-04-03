@@ -9,7 +9,16 @@
 
 #include <linux/types.h>
 
+#include <cpu/config.h>
+#if defined(TARGET_I386)|| defined(TARGET_X86_64)
 #include <asm/kvm.h>
+#elif defined(TARGET_ARM)
+#include <cpu/arm/kvm_arm.h>
+#else
+#error unsupported target CPU
+#endif
+
+
 #include <linux/ioctl.h>
 
 #define KVM_API_VERSION 12
@@ -309,7 +318,8 @@ struct kvm_run {
         /* KVM_EXIT_SYSTEM_EVENT */
         struct {
 #define KVM_SYSTEM_EVENT_SHUTDOWN 1
-#define KVM_SYSTEM_EVENT_RESET 2
+#define KVM_SYSTEM_EVENT_RESET    2
+#define KVM_SYSTEM_EVENT_CRASH    3
             __u32 type;
             __u64 flags;
         } system_event;
@@ -928,6 +938,9 @@ struct kvm_dirty_tlb {
 #define KVM_REG_SIZE_U256 0x0050000000000000ULL
 #define KVM_REG_SIZE_U512 0x0060000000000000ULL
 #define KVM_REG_SIZE_U1024 0x0070000000000000ULL
+
+#define KVM_REG_SIZE(id)						\
+	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
 
 struct kvm_reg_list {
     __u64 n; /* number of regs */
