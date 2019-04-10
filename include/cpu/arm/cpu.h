@@ -26,6 +26,8 @@
 #include <cpu/types.h>
 #include <fpu/softfloat.h>
 
+#define CPUState struct CPUARMState
+
 #define CPUArchState struct CPUARMState
 
 #include "defs.h"
@@ -208,4 +210,7 @@ typedef struct CPUARMState {
 } CPUARMState;
 CPUARMState *cpu_arm_init(const char *cpu_model);
 int cpu_arm_exec(CPUARMState *s);
+
+
+
 #endif

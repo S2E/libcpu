@@ -4040,6 +4040,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start) {
     s->override = -1;
     rex_w = -1;
     rex_r = 0;
+
 #ifdef TARGET_X86_64
     s->rex_x = 0;
     s->rex_b = 0;
@@ -4047,7 +4048,8 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start) {
 #endif
     s->rip_offset = 0; /* for relative ip address */
 next_byte:
-    b = ldub_code(s->pc);
+	printf("s->pc=0x%x\n",s->pc);
+	b = ldub_code(s->pc);
     s->pc++;
 /* check prefixes */
 #ifdef TARGET_X86_64

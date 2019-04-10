@@ -267,7 +267,8 @@ typedef union {
 } CPU_QuadU;
 
 static inline int ldub_p(const void *ptr) {
-    return *(uint8_t *) ptr;
+	printf("ptr=%p\n",ptr);
+	return *(uint8_t *) ptr;
 }
 
 static inline int ldsb_p(const void *ptr) {
@@ -277,11 +278,23 @@ static inline int ldsb_p(const void *ptr) {
 static inline void stb_p(void *ptr, int v) {
     *(uint8_t *) ptr = v;
 }
-
-static inline int lduw_le_p(const void *ptr) {
-    return *(uint16_t *) ptr;
+#if defined(HOST_WORDS_BIGENDIAN) || defined(WORDS_ALIGNED)
+static inline int lduw_le_p(const void *ptr)
+{
+#ifdef _ARCH_PPC
+    int val;
+    __asm__ __volatile__ ("lhbrx %0,0,%1" : "=r" (val) : "r" (ptr));
+    return val;
+#else
+    const uint8_t *p = ptr;
+    return p[0] | (p[1] << 8);
+#endif
 }
-
+#else
+static inline int lduw_le_p(const void *ptr) {
+	return *(uint16_t *) ptr;
+}
+#endif
 static inline int ldsw_le_p(const void *ptr) {
     return *(int16_t *) ptr;
 }

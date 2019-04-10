@@ -44,8 +44,8 @@
 //#define DEBUG_UNASSIGNED
 
 /* make various TB consistency checks */
-//#define DEBUG_TB_CHECK
-//#define DEBUG_TLB_CHECK
+#define DEBUG_TB_CHECK
+#define DEBUG_TLB_CHECK
 
 //#define DEBUG_IOPORT
 //#define DEBUG_SUBPAGE

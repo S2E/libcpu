@@ -67,6 +67,22 @@ struct kvm_regs {
 	unsigned long fiq_regs[8];	/* R8_fiq - R14_fiq, SPSR_fiq */
 };
 
+struct kvm_m_regs {
+	__u32 regs[16];
+};
+
+struct kvm_m_sregs {
+	__u32 other_sp;
+	__u32 vecbase;
+	__u32 basepri;
+	__u32 control;
+    int current_sp;
+    int exception;
+    int pending_exception;
+    __u32 thumb;
+};
+
+
 /* Supported Processor Types */
 #define KVM_ARM_TARGET_CORTEX_A15	0
 #define KVM_ARM_TARGET_CORTEX_A7	1

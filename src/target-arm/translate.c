@@ -24,15 +24,20 @@
 #include <string.h>
 #include <inttypes.h>
 
+// clang-format off
 #include "cpu.h"
 #include <tcg/tcg-op.h>
 // clang-format on
 
-#include <cpu/disas.h>
-
 #include "helper.h"
 #define GEN_HELPER 1
 #include "helper.h"
+
+
+
+#include <cpu/disas.h>
+
+
 
 #ifdef CONFIG_SYMBEX
 #include <cpu/se_libcpu.h>
@@ -4881,7 +4886,7 @@ static int disas_neon_data_insn(CPUARMState * env, DisasContext *s, uint32_t ins
             GEN_NEON_INTEGER_OP(rshl);
             break;
         case NEON_3R_VQRSHL:
-            GEN_NEON_INTEGER_OP_ENV(qrshl);
+            //GEN_NEON_INTEGER_OP_ENV(qrshl);
             break;
         case NEON_3R_VMAX:
             GEN_NEON_INTEGER_OP(max);
@@ -8081,6 +8086,8 @@ gen_thumb2_data_op(DisasContext *s, int op, int conds, uint32_t shifter_out, TCG
     return 0;
 }
 
+
+
 /* Translate a 32-bit thumb instruction.  Returns nonzero if the instruction
    is not legal.  */
 static int disas_thumb2_insn(CPUARMState *env, DisasContext *s, uint16_t insn_hw1)
@@ -9168,10 +9175,12 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s)
           s->condjmp = 1;
         }
     }
+    printf("tbpc=0x%x\n", s->pc);
+    lduw_code(s->pc);
 
     insn = arm_lduw_code(s->pc, s->bswap_code);
     s->pc += 2;
-
+    printf("insn=0x%x\n", insn>>12);
     switch (insn >> 12) {
     case 0: case 1:
 
@@ -9998,6 +10007,7 @@ static inline void gen_intermediate_code_internal(CPUARMState *env,
 //        }
 
         if (dc->thumb) {
+        	printf("    disas thumb tb\n");
             disas_thumb_insn(env, dc);
             if (dc->condexec_mask) {
                 dc->condexec_cond = (dc->condexec_cond & 0xe)

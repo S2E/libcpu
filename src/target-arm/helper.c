@@ -313,6 +313,7 @@ void cpu_state_reset(CPUARMState *env) {
         uint32_t pc;
         uint8_t *rom;
         env->uncached_cpsr &= ~CPSR_I;
+        printf("cpsr=0x%x \n", env->uncached_cpsr);
         rom = rom_ptr(0);
         if (rom) {
             /* We should really use ldl_phys here, in case the guest

@@ -155,6 +155,8 @@ void glue(glue(st, SUFFIX), MEMSUFFIX)(target_ulong ptr, RES_TYPE v);
 #define HELPER_PREFIX helper_
 #endif
 
+
+
 /* generic load/store macros */
 
 static SMHINLINE RES_TYPE glue(glue(glue(CPU_PREFIX, ld), USUFFIX), MEMSUFFIX)(ENV_PARAM target_ulong ptr) {

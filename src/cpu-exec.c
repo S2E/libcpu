@@ -26,7 +26,7 @@
 
 #define barrier() asm volatile("" ::: "memory")
 
-// #define DEBUG_EXEC
+#define DEBUG_EXEC
 
 #ifdef DEBUG_EXEC
 #define DPRINTF(...) printf(__VA_ARGS__)
@@ -79,12 +79,13 @@ static TranslationBlock *tb_find_slow(CPUArchState *env, target_ulong pc, target
     target_ulong virt_page2;
 
     tb_invalidated_flag = 0;
-
+    DPRINTF("   find translated block using physical mappings \n");
     /* find translated block using physical mappings */
     phys_pc = get_page_addr_code(env, pc);
     phys_page1 = phys_pc & TARGET_PAGE_MASK;
     h = tb_phys_hash_func(phys_pc);
     ptb1 = &tb_phys_hash[h];
+
     for (;;) {
         tb = *ptb1;
         if (!tb)
@@ -108,6 +109,7 @@ static TranslationBlock *tb_find_slow(CPUArchState *env, target_ulong pc, target
     }
 not_found:
     /* if no translated code available, then translate it now */
+    DPRINTF("   if no translated code available, then translate it now pc=0x%x, cs_base=0x%x, flags= 0x%lx\n", pc, cs_base, flags);
     tb = tb_gen_code(env, pc, cs_base, flags, 0);
     ++g_cpu_stats.tb_regens;
 
@@ -182,12 +184,18 @@ volatile sig_atomic_t exit_request;
 static uintptr_t fetch_and_run_tb(uintptr_t prev_tb, CPUArchState *env) {
     uint8_t *tc_ptr;
     uintptr_t next_tb;
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
+    DPRINTF("   fetch_and_run_tb %lx fl=%lx riw=%d\n", (uint64_t) env->eip, (uint64_t) env->mflags,
+                env->kvm_request_interrupt_window);
+#elif defined(TARGET_ARM)
+    DPRINTF("   fetch_and_run_tb r15=0x%x cpsr=0x%x \n", (uint32_t) env->regs[15], env->uncached_cpsr);
+#else
+#error Unsupported target architecture
+#endif
 
-    DPRINTF("fetch_and_run_tb %lx fl=%lx riw=%d\n", (uint64_t) env->eip, (uint64_t) env->mflags,
-            env->kvm_request_interrupt_window);
 
     TranslationBlock *tb = tb_find_fast(env);
-
+    DPRINTF("   TB has found \n");
     /* Note: we do it here to avoid a gcc bug on Mac OS X when
        doing it in tb_find_slow */
     if (tb_invalidated_flag) {
@@ -268,9 +276,15 @@ static bool process_interrupt_request(CPUArchState *env) {
     }
 
     bool has_interrupt = false;
-
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
     DPRINTF("  process_interrupt intrq=%#x mflags=%#lx hf1=%#x hf2=%#x\n", interrupt_request, (uint64_t) env->mflags,
             env->hflags, env->hflags2);
+#elif defined(TARGET_ARM)
+    DPRINTF("  process_interrupt intrq=%#x \n", interrupt_request);
+#else
+#error Unsupported target architecture
+#endif
+
 
     if (unlikely(env->singlestep_enabled & SSTEP_NOIRQ)) {
         /* Mask out external interrupts for this step. */
@@ -325,7 +339,7 @@ static bool process_interrupt_request(CPUArchState *env) {
             libcpu_log_mask(CPU_LOG_INT, "Servicing hardware INT=0x%02x\n", intno);
             if (intno >= 0) {
 #ifdef SE_KVM_DEBUG_IRQ
-                DPRINTF("Handling interrupt %d\n", intno);
+                DPRINTF("  Handling interrupt %d\n", intno);
 #endif
                 do_interrupt_x86_hardirq(env, intno, 1);
             }
@@ -432,8 +446,9 @@ static bool execution_loop(CPUArchState *env) {
             // TODO: add an option to customize which regs to print
             log_cpu_state(env, X86_DUMP_GPREGS);
 
-#endif
+#else
             log_cpu_state(env, 0);
+#endif
         }
 #endif /* DEBUG_DISAS || CONFIG_DEBUG_EXEC */
 
@@ -457,7 +472,6 @@ static bool execution_loop(CPUArchState *env) {
 
 int cpu_exec(CPUArchState *env) {
     int ret;
-
     if (env->halted) {
         if (!cpu_has_work(env)) {
             return EXCP_HALTED;
@@ -482,8 +496,6 @@ int cpu_exec(CPUArchState *env) {
 
     env->exception_index = -1;
 
-    DPRINTF("cpu_loop enter mflags=%#lx hf1=%#x hf2=%#x\n", (uint64_t) env->mflags, env->hflags, env->hflags2);
-
     /* prepare setjmp context for exception handling */
     for (;;) {
         if (setjmp(env->jmp_env) == 0) {
@@ -493,9 +505,13 @@ int cpu_exec(CPUArchState *env) {
              * This usually happens when TB cache is flushed but current tb is not reset.
              */
             env->current_tb = NULL;
-
+#if defined(TARGET_I386)
             DPRINTF("  setjmp entered eip=%#lx\n", (uint64_t) env->eip);
-
+#elif defined(TARGET_ARM)
+            DPRINTF("  setjmp entered r15=%#x\n", (uint32_t) env->regs[15]);
+#else
+#error Unsupported target architecture
+#endif
 #ifdef CONFIG_SYMBEX
             assert(env->exception_index != EXCP_SE);
             if (g_sqi.exec.finalize_tb_exec()) {
@@ -508,7 +524,6 @@ int cpu_exec(CPUArchState *env) {
                 continue;
             }
 #endif
-
             ret = process_exceptions(env);
             if (ret) {
                 if (ret == EXCP_HLT && env->interrupt_request) {
@@ -518,7 +533,7 @@ int cpu_exec(CPUArchState *env) {
                 }
                 break;
             }
-
+            DPRINTF("  execution_loop\n");
             if (execution_loop(env)) {
                 break;
             }
@@ -537,7 +552,15 @@ int cpu_exec(CPUArchState *env) {
             env = cpu_single_env;
         }
     } /* for(;;) */
+#if defined(TARGET_I386)
     DPRINTF("cpu_loop exit ret=%#x eip=%#lx\n", ret, (uint64_t) env->eip);
+#elif defined(TARGET_ARM)
+    DPRINTF("cpu_loop exit ret=%#x r15=%#x\n", ret, (uint32_t) env->regs[15]);
+#else
+#error Unsupported target architecture
+#endif
+
+
 
     env->current_tb = NULL;
 
