@@ -26,7 +26,7 @@
 
 #define barrier() asm volatile("" ::: "memory")
 
-#define DEBUG_EXEC
+//#define DEBUG_EXEC
 
 #ifdef DEBUG_EXEC
 #define DPRINTF(...) printf(__VA_ARGS__)

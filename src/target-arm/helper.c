@@ -313,7 +313,7 @@ void cpu_state_reset(CPUARMState *env) {
         uint32_t pc;
         uint8_t *rom;
         env->uncached_cpsr &= ~CPSR_I;
-        printf("cpsr=0x%x \n", env->uncached_cpsr);
+        //printf("cpsr=0x%x \n", env->uncached_cpsr);
         rom = rom_ptr(0);
         if (rom) {
             /* We should really use ldl_phys here, in case the guest
@@ -785,8 +785,18 @@ static void do_interrupt_v7m(CPUARMState *env) {
     env->thumb = addr & 1;
 }
 
+#ifdef CONFIG_SYMBEX
+#include <cpu/se_libcpu.h>
+/* This will be called from S2EExecutor if running concretely; It will
+   in turn call the real ARM IRQ handler with current CPUARMState.*/
+void do_interrupt(CPUARMState *env){
+	g_sqi.exec.do_interrupt_arm(env);
+}
+void s2e_do_interrupt_arm(CPUARMState *env) {
+#else
 /* Handle a CPU exception.  */
 void do_interrupt(CPUARMState *env) {
+#endif
     uint32_t addr;
     uint32_t mask;
     int new_mode;

@@ -9180,7 +9180,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s)
 
     insn = arm_lduw_code(s->pc, s->bswap_code);
     s->pc += 2;
-    printf("insn=0x%x\n", insn>>12);
+
     switch (insn >> 12) {
     case 0: case 1:
 
@@ -10007,7 +10007,6 @@ static inline void gen_intermediate_code_internal(CPUARMState *env,
 //        }
 
         if (dc->thumb) {
-        	printf("    disas thumb tb\n");
             disas_thumb_insn(env, dc);
             if (dc->condexec_mask) {
                 dc->condexec_cond = (dc->condexec_cond & 0xe)

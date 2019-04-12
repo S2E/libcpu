@@ -225,7 +225,7 @@ int cpu_gen_code(CPUArchState *env, TranslationBlock *tb, int *gen_code_size_ptr
     tb->gen_opparam_buf = gen_opparam_buf;
 #endif
 
-    printf("    gen_intermediate_code tbpc=%x\n",tb->pc);
+    //printf("    gen_intermediate_code tbpc=%x\n",tb->pc);
     gen_intermediate_code(env, tb);
 
     /* generate machine code */

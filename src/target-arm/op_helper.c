@@ -22,15 +22,9 @@
 #include "helper.h"
 
 
-
-
-
 #define SIGNBIT (uint32_t) 0x80000000
 #define SIGNBIT64 ((uint64_t) 1 << 63)
 
-#ifdef SYMBEX_LLVM_LIB
-#include "llvm-lib.h"
-#endif
 
 struct CPUARMState *env = 0;
 
@@ -95,15 +89,7 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def, uint32_t rn, uint32_t max
 #undef _raw
 #endif
 
-#ifdef CONFIG_SYMBEX
-#include <cpu/se_libcpu.h>
 
-/* This will be called from S2EExecutor if running concretely; It will
-   in turn call the real ARM IRQ handler with current CPUARMState.*/
-void s2e_do_interrupt(void) {
-    s2e_helper_do_interrupt(env);
-}
-#endif
 
 /* try to fill the TLB and return an exception if error. If retaddr is
    NULL, it means that the function was called in C code (i.e. not

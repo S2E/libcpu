@@ -26,7 +26,7 @@
 #include <cpu/types.h>
 #include <fpu/softfloat.h>
 
-#define CPUState struct CPUARMState
+//#define CPUState struct CPUARMState
 
 #define CPUArchState struct CPUARMState
 

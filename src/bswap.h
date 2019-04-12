@@ -267,7 +267,6 @@ typedef union {
 } CPU_QuadU;
 
 static inline int ldub_p(const void *ptr) {
-	printf("ptr=%p\n",ptr);
 	return *(uint8_t *) ptr;
 }
 
