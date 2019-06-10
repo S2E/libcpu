@@ -76,6 +76,22 @@ typedef struct DisasContext {
     int vfp_enabled;
     int vec_len;
     int vec_stride;
+#ifdef CONFIG_SYMBEX
+    void *cpuState;
+    target_ulong insPc;  /* pc of the instruction being translated */
+    int useNextPc;       /* indicates whether nextPc is valid */
+    target_ulong nextPc; /* pc of the instruction following insPc */
+    int enable_jmp_im;
+    int done_instr_end; /* 1 when onTranslateInstructionEnd was called */
+
+    // Pointer to tcg pointer for the current instruction
+    uint16_t *ins_opc;
+    TCGArg *ins_arg;
+
+    int done_reg_access_end; /* 1 when onTranslateRegisterAccess was called */
+    int instrument;          /* 1 when it is ok to call plugin code */
+    int invalid_instr;       /* tb contains invalid instruction */
+#endif
 } DisasContext;
 
 static uint32_t gen_opc_condexec_bits[OPC_BUF_SIZE];
@@ -9175,7 +9191,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s)
           s->condjmp = 1;
         }
     }
-    printf("tbpc=0x%x\n", s->pc);
+    //printf("tbpc=0x%x\n", s->pc);
     lduw_code(s->pc);
 
     insn = arm_lduw_code(s->pc, s->bswap_code);
@@ -9307,9 +9323,14 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s)
                     tmp2 = tcg_temp_new_i32();
                     tcg_gen_movi_i32(tmp2, val);
                     store_reg(s, 14, tmp2);
+                    gen_bx(s, tmp);
+                }else{
+                    gen_bx(s,tmp);
+                    if(env->v7m.exception != 0&&IS_M(env)){
+                        gen_exception(EXCP_EXCEPTION_EXIT);
+                        s->is_jmp=DISAS_UPDATE;
+                    }
                 }
-                /* already thumb, no need to check */
-                gen_bx(s, tmp);
                 break;
             }
             break;
@@ -10008,6 +10029,8 @@ static inline void gen_intermediate_code_internal(CPUARMState *env,
 
         if (dc->thumb) {
             disas_thumb_insn(env, dc);
+            if(dc->is_jmp==DISAS_UPDATE)
+                break;
             if (dc->condexec_mask) {
                 dc->condexec_cond = (dc->condexec_cond & 0xe)
                                    | ((dc->condexec_mask >> 4) & 1);

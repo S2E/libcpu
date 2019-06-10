@@ -495,9 +495,14 @@ TranslationBlock *tb_gen_code(CPUArchState *env, target_ulong pc, target_ulong c
     tb_page_addr_t phys_pc, phys_page2;
     target_ulong virt_page2;
     int code_gen_size;
-
-    phys_pc = get_page_addr_code(env, pc);
-    tb = tb_alloc(pc);
+/*     if(pc >= 0xfffffff0 && IS_M(env)) { */
+        /* We always get here via a jump, so know we are not in a */
+           /* conditional execution block.  */
+        /* phys_pc=-1; */
+        /* tb = tb_alloc(pc); */
+    /* } */
+        phys_pc = get_page_addr_code(env, pc);
+        tb = tb_alloc(pc);
     if (!tb) {
         /* flush must be done */
         tb_flush(env);

@@ -28,10 +28,12 @@ add_library(cpu cpu-exec.c
 target_include_directories(cpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                       ${CMAKE_SOURCE_DIR}/include
                                       ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_DIR}
-                                      ${CMAKE_BINARY_DIR}/include)
+                                      ${CMAKE_BINARY_DIR}/include
+									  /opt/s2earm/source/s2e/qemu/include/nvic)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__STDC_FORMAT_MACROS -D_GNU_SOURCE -DNEED_CPU_H  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DTARGET_PHYS_ADDR_BITS=64")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fPIC -Werror -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS "-fno-elide-constructors ${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O0 -fPIC -Werror -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing -Wno-sign-compare -Wno-missing-field-initializers -Wno-mismatched-tags -Wno-deprecated-declarations -Wno-initializer-overrides -Wno-zero-length-array")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fexceptions")
 

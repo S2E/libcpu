@@ -81,6 +81,14 @@ static TranslationBlock *tb_find_slow(CPUArchState *env, target_ulong pc, target
     tb_invalidated_flag = 0;
     DPRINTF("   find translated block using physical mappings \n");
     /* find translated block using physical mappings */
+    printf("tbpc=0x%x\n", pc);
+
+/*     if (pc >= 0xfffffff0 && IS_M(env)) { */
+        /* We always get here via a jump, so know we are not in a */
+           /* conditional execution block.  */
+        /* ptb1 = NULL; */
+        /* goto not_found; */
+    /* } */
     phys_pc = get_page_addr_code(env, pc);
     phys_page1 = phys_pc & TARGET_PAGE_MASK;
     h = tb_phys_hash_func(phys_pc);
@@ -260,7 +268,7 @@ static uintptr_t fetch_and_run_tb(uintptr_t prev_tb, CPUArchState *env) {
 // printf("eip: %lx\n", (uint64_t) env->eip);
 #endif
 
-        next_tb = tcg_libcpu_tb_exec(env, tc_ptr);
+    next_tb = tcg_libcpu_tb_exec(env, tc_ptr);
 #endif
 
     env->current_tb = NULL;

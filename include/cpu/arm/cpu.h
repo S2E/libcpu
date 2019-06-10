@@ -211,6 +211,6 @@ typedef struct CPUARMState {
 CPUARMState *cpu_arm_init(const char *cpu_model);
 int cpu_arm_exec(CPUARMState *s);
 
-
+void arm_cpu_set_irq(CPUARMState *env, int level);
 
 #endif

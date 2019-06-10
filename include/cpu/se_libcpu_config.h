@@ -23,17 +23,23 @@
 #ifdef CONFIG_SYMBEX
 
 /** Enables symbolic execution TLB to speed-up concrete memory accesses */
-//#define SE_ENABLE_TLB
+#define SE_ENABLE_TLB
 
 /** This defines the size of each MemoryObject that represents physical RAM.
     Larger values save some memory, smaller (exponentially) decrease solving
     time for constraints with symbolic addresses */
-
 //#ifdef SE_ENABLE_TLB
 // XXX: Use TARGET_PAGE_BITS somehow...
 //#define SE_RAM_OBJECT_BITS 12
 //#else
 /* Do not touch this */
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
+#include <cpu/i386/defs.h>
+#elif defined(TARGET_ARM)
+#include <cpu/arm/defs.h>
+#else
+#error Unsupported target architecture
+#endif
 #define SE_RAM_OBJECT_BITS TARGET_PAGE_BITS
 //#endif
 

@@ -9,6 +9,10 @@
 
 #include <linux/types.h>
 
+#ifndef BIT
+#define BIT(n) (1 << (n))
+#endif
+
 #include <cpu/config.h>
 #if defined(TARGET_I386)|| defined(TARGET_X86_64)
 #include <asm/kvm.h>
@@ -1098,19 +1102,17 @@ struct kvm_s390_ucas_mapping {
  */
 #define KVM_RUN _IO(KVMIO, 0x80)
 
-#if defined(TARGET_I386)|| defined(TARGET_X86_64)
+
 #define KVM_GET_REGS _IOR(KVMIO, 0x81, struct kvm_regs)
 #define KVM_SET_REGS _IOW(KVMIO, 0x82, struct kvm_regs)
 #define KVM_GET_SREGS _IOR(KVMIO, 0x83, struct kvm_sregs)
 #define KVM_SET_SREGS _IOW(KVMIO, 0x84, struct kvm_sregs)
-#elif defined(TARGET_ARM)
-#define KVM_GET_REGS _IOR(KVMIO, 0x81, struct kvm_m_regs)
-#define KVM_SET_REGS _IOW(KVMIO, 0x82, struct kvm_m_regs)
-#define KVM_GET_SREGS _IOR(KVMIO, 0x83, struct kvm_m_sregs)
-#define KVM_SET_SREGS _IOW(KVMIO, 0x84, struct kvm_m_sregs)
-#else
-#error unsupported target CPU
-#endif
+
+#define KVM_GET_M_REGS _IOR(KVMIO, 0xc0, struct kvm_m_regs)
+#define KVM_SET_M_REGS _IOW(KVMIO, 0xc1, struct kvm_m_regs)
+#define KVM_GET_M_SREGS _IOR(KVMIO, 0xc2, struct kvm_m_sregs)
+#define KVM_SET_M_SREGS _IOW(KVMIO, 0xc3, struct kvm_m_sregs)
+
 
 
 

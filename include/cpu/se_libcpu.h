@@ -43,9 +43,9 @@ struct TranslationBlock;
 
 typedef uintptr_t (*se_libcpu_tb_exec_t)(CPUArchState *env1, struct TranslationBlock *tb);
 typedef void (*se_do_interrupt_all_t)(int intno, int is_int, int error_code, uintptr_t next_eip, int is_hw);
-
+typedef void (*se_do_interrupt_arm_t)(CPUArchState *env1);
 void se_do_interrupt_all(int intno, int is_int, int error_code, target_ulong next_eip, int is_hw);
-
+void se_do_interrupt_arm(CPUArchState *env1);
 #define MEM_TRACE_FLAG_IO 1
 #define MEM_TRACE_FLAG_WRITE 2
 #define MEM_TRACE_FLAG_PRECISE 4
@@ -84,7 +84,7 @@ struct se_libcpu_interface_t {
 
         se_libcpu_tb_exec_t tb_exec;
         se_do_interrupt_all_t do_interrupt_all;
-
+        se_do_interrupt_arm_t do_interrupt_arm;
         unsigned *clock_scaling_factor;
     } exec;
 

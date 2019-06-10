@@ -165,6 +165,7 @@ extern int tb_invalidated_flag;
 #endif
 
 
+#include "exec-all.h"
 
 #define DATA_SIZE 1
 #include "softmmu_header.h"
