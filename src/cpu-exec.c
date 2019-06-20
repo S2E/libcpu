@@ -81,7 +81,9 @@ static TranslationBlock *tb_find_slow(CPUArchState *env, target_ulong pc, target
     tb_invalidated_flag = 0;
     DPRINTF("   find translated block using physical mappings \n");
     /* find translated block using physical mappings */
-    printf("tbpc=0x%x\n", pc);
+    //printf("tbpc=0x%x\n", pc);
+   // if(pc==0x1f70)
+    //    printf("interrupt\n");
 
 /*     if (pc >= 0xfffffff0 && IS_M(env)) { */
         /* We always get here via a jump, so know we are not in a */
@@ -149,6 +151,9 @@ static inline TranslationBlock *tb_find_fast(CPUArchState *env) {
         tb_flush(env);
     }
 #endif
+    printf("armv7mpc=0x%x\n",env->regs[15]);
+//    if(env->regs[15]==0x2828)
+//        printf("interrupt\n");
 
     /* we record a subset of the CPU state. It will
        always be the same before a given translated block

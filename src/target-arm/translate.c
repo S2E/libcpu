@@ -789,6 +789,12 @@ static inline void store_reg_from_load(CPUARMState *env, DisasContext *s,
 {
     if (reg == 15 && ENABLE_ARCH_5) {
         gen_bx(s, var);
+        if(env->v7m.exception != 0&&IS_M(env)){
+            printf("interrupt pc=0x%x\n", env->regs[15]);
+            printf("interrupt lr=0x%x\n", env->regs[14]);
+            gen_exception(EXCP_EXCEPTION_EXIT);
+            s->is_jmp=DISAS_UPDATE;
+        }
     } else {
         store_reg(s, reg, var);
     }
@@ -9326,7 +9332,9 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s)
                     gen_bx(s, tmp);
                 }else{
                     gen_bx(s,tmp);
-                    if(env->v7m.exception != 0&&IS_M(env)){
+                    if(env->v7m.exception != 0&&IS_M(env)&&env->regs[14]>0xf0000000){
+                       // printf("interrupt pc=0x%x\n", env->regs[15]);
+                       // printf("interrupt lr=0x%x\n", env->regs[14]);
                         gen_exception(EXCP_EXCEPTION_EXIT);
                         s->is_jmp=DISAS_UPDATE;
                     }
