@@ -30,13 +30,23 @@ extern "C" {
 #endif
 
 struct TranslationBlock;
+
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
 struct CPUX86State;
+#define CPUArchState struct CPUX86State
+#elif defined(TARGET_ARM)
+struct CPUARMState;
+#define CPUArchState struct CPUARMState
+#else
+#error Unsupported target architecture
+#endif
 
-typedef uintptr_t (*se_libcpu_tb_exec_t)(struct CPUX86State *env1, struct TranslationBlock *tb);
+
+typedef uintptr_t (*se_libcpu_tb_exec_t)(CPUArchState *env1, struct TranslationBlock *tb);
 typedef void (*se_do_interrupt_all_t)(int intno, int is_int, int error_code, uintptr_t next_eip, int is_hw);
-
+typedef void (*se_do_interrupt_arm_t)(CPUArchState *env1);
 void se_do_interrupt_all(int intno, int is_int, int error_code, target_ulong next_eip, int is_hw);
-
+void se_do_interrupt_arm(CPUArchState *env1);
 #define MEM_TRACE_FLAG_IO 1
 #define MEM_TRACE_FLAG_WRITE 2
 #define MEM_TRACE_FLAG_PRECISE 4
@@ -75,7 +85,7 @@ struct se_libcpu_interface_t {
 
         se_libcpu_tb_exec_t tb_exec;
         se_do_interrupt_all_t do_interrupt_all;
-
+        se_do_interrupt_arm_t do_interrupt_arm;
         unsigned *clock_scaling_factor;
     } exec;
 
@@ -92,14 +102,14 @@ struct se_libcpu_interface_t {
     struct tlb {
         void (*flush_tlb_cache)(void);
         void (*flush_tlb_cache_page)(void *objectState, int mmu_idx, int index);
-        void (*update_tlb_entry)(struct CPUX86State *env, int mmu_idx, uint64_t virtAddr, uint64_t hostAddr);
+        void (*update_tlb_entry)(CPUArchState *env, int mmu_idx, uint64_t virtAddr, uint64_t hostAddr);
     } tlb;
 
     /* Register access */
     struct regs {
         void (*read_concrete)(unsigned offset, uint8_t *buf, unsigned size);
         void (*write_concrete)(unsigned offset, uint8_t *buf, unsigned size);
-        void (*set_cc_op_eflags)(struct CPUX86State *state);
+        void (*set_cc_op_eflags)(CPUArchState *state);
     } regs;
 
     /* Memory accessors */
@@ -148,8 +158,15 @@ struct se_libcpu_interface_t {
 
     /* Internal functions in libcpu. */
     struct libcpu {
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
         uint32_t (*ldub_code)(struct CPUX86State *env, target_ulong virtual_address);
         uint32_t (*ldl_code)(struct CPUX86State *env, target_ulong virtual_address);
+#elif defined(TARGET_ARM)
+        uint32_t (*ldub_code)(struct CPUARMState *env, target_ulong virtual_address);
+        uint32_t (*ldl_code)(struct CPUARMState *env, target_ulong virtual_address);
+#else
+#error Unsupported target architecture
+#endif
     } libcpu;
 
     /* Core plugin interface */
@@ -246,13 +263,15 @@ void tcg_llvm_before_memory_access(target_ulong vaddr, uint64_t value, unsigned 
 
 void tcg_llvm_after_memory_access(target_ulong vaddr, uint64_t value, unsigned size, unsigned flags, uintptr_t retaddr);
 
-// XXX: change bits to bytes
-uint64_t tcg_llvm_trace_port_access(uint64_t port, uint64_t value, unsigned bits, int isWrite);
-
 uint64_t tcg_llvm_trace_mmio_access(uint64_t physaddr, uint64_t value, unsigned bytes, int isWrite);
 
 void tcg_llvm_write_mem_io_vaddr(uint64_t value, int reset);
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
+// XXX: change bits to bytes
+uint64_t tcg_llvm_trace_port_access(uint64_t port, uint64_t value, unsigned bits, int isWrite);
 void tcg_llvm_get_value(void *addr, unsigned nbytes, bool addConstraint);
+#endif
+
 #endif
 
 #ifdef __cplusplus

@@ -152,30 +152,30 @@ static inline void cpu_set_tls(CPUARMState *env, target_ulong newtls) {
     env->cp15.c13_tls2 = newtls;
 }
 
-#define CPSR_M (0x1f)
-#define CPSR_T (1 << 5)
-#define CPSR_F (1 << 6)
-#define CPSR_I (1 << 7)
-#define CPSR_A (1 << 8)
-#define CPSR_E (1 << 9)
-#define CPSR_IT_2_7 (0xfc00)
-#define CPSR_GE (0xf << 16)
-#define CPSR_RESERVED (0xf << 20)
-#define CPSR_J (1 << 24)
-#define CPSR_IT_0_1 (3 << 25)
-#define CPSR_Q (1 << 27)
-#define CPSR_V (1 << 28)
-#define CPSR_C (1 << 29)
-#define CPSR_Z (1 << 30)
-#define CPSR_N (1 << 31)
-#define CPSR_NZCV (CPSR_N | CPSR_Z | CPSR_C | CPSR_V)
+/* #define CPSR_M (0x1f) */
+// #define CPSR_T (1 << 5)
+// #define CPSR_F (1 << 6)
+// #define CPSR_I (1 << 7)
+// #define CPSR_A (1 << 8)
+// #define CPSR_E (1 << 9)
+// #define CPSR_IT_2_7 (0xfc00)
+// #define CPSR_GE (0xf << 16)
+// #define CPSR_RESERVED (0xf << 20)
+// #define CPSR_J (1 << 24)
+// #define CPSR_IT_0_1 (3 << 25)
+// #define CPSR_Q (1 << 27)
+// #define CPSR_V (1 << 28)
+// #define CPSR_C (1 << 29)
+// #define CPSR_Z (1 << 30)
+// #define CPSR_N (1 << 31)
+// #define CPSR_NZCV (CPSR_N | CPSR_Z | CPSR_C | CPSR_V)
 
-#define CPSR_IT (CPSR_IT_0_1 | CPSR_IT_2_7)
-#define CACHED_CPSR_BITS (CPSR_T | CPSR_GE | CPSR_IT | CPSR_Q | CPSR_NZCV)
-/* Bits writable in user mode.  */
-#define CPSR_USER (CPSR_NZCV | CPSR_Q | CPSR_GE)
-/* Execution state bits.  MRS read as zero, MSR writes ignored.  */
-#define CPSR_EXEC (CPSR_T | CPSR_IT | CPSR_J)
+// #define CPSR_IT (CPSR_IT_0_1 | CPSR_IT_2_7)
+// #define CACHED_CPSR_BITS (CPSR_T | CPSR_GE | CPSR_IT | CPSR_Q | CPSR_NZCV)
+// [> Bits writable in user mode.  <]
+// #define CPSR_USER (CPSR_NZCV | CPSR_Q | CPSR_GE)
+// [> Execution state bits.  MRS read as zero, MSR writes ignored.  <]
+/* #define CPSR_EXEC (CPSR_T | CPSR_IT | CPSR_J) */
 
 /* Return the current CPSR value.  */
 uint32_t cpsr_read(CPUARMState *env);
@@ -220,15 +220,15 @@ static inline void xpsr_write(CPUARMState *env, uint32_t val, uint32_t mask) {
 uint32_t vfp_get_fpscr(CPUARMState *env);
 void vfp_set_fpscr(CPUARMState *env, uint32_t val);
 
-enum arm_cpu_mode {
-    ARM_CPU_MODE_USR = 0x10,
-    ARM_CPU_MODE_FIQ = 0x11,
-    ARM_CPU_MODE_IRQ = 0x12,
-    ARM_CPU_MODE_SVC = 0x13,
-    ARM_CPU_MODE_ABT = 0x17,
-    ARM_CPU_MODE_UND = 0x1b,
-    ARM_CPU_MODE_SYS = 0x1f
-};
+/* enum arm_cpu_mode { */
+    // ARM_CPU_MODE_USR = 0x10,
+    // ARM_CPU_MODE_FIQ = 0x11,
+    // ARM_CPU_MODE_IRQ = 0x12,
+    // ARM_CPU_MODE_SVC = 0x13,
+    // ARM_CPU_MODE_ABT = 0x17,
+    // ARM_CPU_MODE_UND = 0x1b,
+    // ARM_CPU_MODE_SYS = 0x1f
+/* }; */
 
 /* VFP system registers.  */
 #define ARM_VFP_FPSID 0
@@ -403,9 +403,9 @@ void cpu_arm_set_cp_io(CPUARMState *env, int cpnum, ARMReadCPFunc *cp_read, ARMW
 #define MMU_MODE1_SUFFIX _user
 #define MMU_USER_IDX 1
 
-static inline int cpu_mmu_index(CPUARMState *env) {
-    return (env->uncached_cpsr & CPSR_M) == ARM_CPU_MODE_USR ? 1 : 0;
-}
+/* static inline int cpu_mmu_index(CPUARMState *env) { */
+    // return (env->uncached_cpsr & CPSR_M) == ARM_CPU_MODE_USR ? 1 : 0;
+// }
 
 #include "cpu-all.h"
 

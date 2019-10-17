@@ -76,6 +76,22 @@ typedef struct DisasContext {
     int vfp_enabled;
     int vec_len;
     int vec_stride;
+#ifdef CONFIG_SYMBEX
+    void *cpuState;
+    target_ulong insPc;  /* pc of the instruction being translated */
+    int useNextPc;       /* indicates whether nextPc is valid */
+    target_ulong nextPc; /* pc of the instruction following insPc */
+    int enable_jmp_im;
+    int done_instr_end; /* 1 when onTranslateInstructionEnd was called */
+
+    // Pointer to tcg pointer for the current instruction
+    uint16_t *ins_opc;
+    TCGArg *ins_arg;
+
+    int done_reg_access_end; /* 1 when onTranslateRegisterAccess was called */
+    int instrument;          /* 1 when it is ok to call plugin code */
+    int invalid_instr;       /* tb contains invalid instruction */
+#endif
 } DisasContext;
 
 static uint32_t gen_opc_condexec_bits[OPC_BUF_SIZE];
