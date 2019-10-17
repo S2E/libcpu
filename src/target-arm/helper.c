@@ -733,7 +733,7 @@ void do_interrupt_v7m(CPUARMState *env)
         lr |= 4; 
     if (env->v7m.exception == 0) 
 		lr |= 8; 
-
+    //printf("interreput = 0x%x\n",env->exception_index);
     /* For exceptions we just mark as pending on the NVIC, and let that
        handle it.  */
     switch (env->exception_index) {
@@ -773,13 +773,6 @@ void do_interrupt_v7m(CPUARMState *env)
         return; /* Never happens.  Keep compiler happy.  */
     }
 
-	//lr = R_V7M_EXCRET_RES1_MASK | R_V7M_EXCRET_S_MASK |
-		//R_V7M_EXCRET_DCRS_MASK | R_V7M_EXCRET_FTYPE_MASK | R_V7M_EXCRET_ES_MASK;
-
-
-    //if (!arm_v7m_is_handler_mode(env)) {
-     //   lr |= R_V7M_EXCRET_MODE_MASK;
-    //}
     /* Align stack pointer.  */
     /* ??? Should only do this if Configuration Control Register
        STACKALIGN bit is set.  */
@@ -787,8 +780,6 @@ void do_interrupt_v7m(CPUARMState *env)
         env->regs[13] -= 4;
         xpsr |= 0x200;
     }
-    //ignore_stackfaults = v7m_push_stack(cpu);
-    /* Switch to the handler mode.  */
     v7m_push(env, xpsr);
     v7m_push(env, env->regs[15]);
     v7m_push(env, env->regs[14]);
@@ -798,15 +789,13 @@ void do_interrupt_v7m(CPUARMState *env)
     v7m_push(env, env->regs[1]);
     v7m_push(env, env->regs[0]);
     
-	
-    //v7m_exception_taken(cpu, lr, false, ignore_stackfaults);
 
     /* Now we've done everything that might cause a derived exception
      * we can go ahead and activate whichever exception we're going to
      * take (which might now be the derived exception).
      */
     
-    /* armv7m_nvic_acknowledge_irq(env->nvic);	 */
+    /* Switch to the msp stack.  */
 	switch_v7m_sp(env, 0);	
     /* Clear IT bits */
     env->condexec_bits = 0;
@@ -2256,11 +2245,16 @@ void HELPER(v7m_msr)(CPUARMState *env, uint32_t reg, uint32_t val) {
             break;
         case 17: /* BASEPRI */
             env->v7m.basepri = val & 0xff;
+            env->kvm_exit_code = 1;
+            cpu_exit(env);
             break;
         case 18: /* BASEPRI_MAX */
             val &= 0xff;
-            if (val != 0 && (val < env->v7m.basepri || env->v7m.basepri == 0))
+            if (val != 0 && (val < env->v7m.basepri || env->v7m.basepri == 0)){
                 env->v7m.basepri = val;
+                env->kvm_exit_code = 1;
+                cpu_exit(env);
+            }
             break;
         case 19: /* FAULTMASK */
             if (val & 1)

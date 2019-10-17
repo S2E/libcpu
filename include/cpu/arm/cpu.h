@@ -206,6 +206,8 @@ typedef struct CPUARMState {
     /* For KVM */
     int kvm_request_interrupt_window;
     int kvm_irq;
+    int kvm_exit_code; //now only used for msr
+    uint8_t timer_interrupt_disabled;
 
 } CPUARMState;
 CPUARMState *cpu_arm_init(const char *cpu_model);
