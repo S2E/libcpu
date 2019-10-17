@@ -185,6 +185,9 @@ struct kvm_pit_config {
 #define KVM_EXIT_EPR 23
 #define KVM_EXIT_SYSTEM_EVENT 24
 
+/* ARM Cortex-m exit codes */
+#define KVM_EXIT_SYNC_ARM_V7M_SREGS 40
+
 /* Symbolic execution exit codes */
 #define KVM_EXIT_FLUSH_DISK 100
 #define KVM_EXIT_SAVE_DEV_STATE 101
