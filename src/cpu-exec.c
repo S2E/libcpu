@@ -257,9 +257,9 @@ static uintptr_t fetch_and_run_tb(uintptr_t prev_tb, CPUArchState *env) {
            (uint64_t) env->regs[R_EDX], (uint64_t) env->regs[R_ESI], (uint64_t) env->regs[R_EDI],
            (uint64_t) env->regs[R_EBP], (uint64_t) env->regs[R_ESP]);
 #elif defined(TARGET_ARM)
-    printf("PC=%lx R1=%lx R2=%lx R3=%lx SP=%lx LR=%lx\n",
-           (uint64_t) env->regs[15], (uint64_t) env->regs[0], (uint64_t) env->regs[1],
-           (uint64_t) env->regs[2], (uint64_t) env->regs[13], (uint64_t) env->regs[14]);
+    printf("PC=%x R1=%x R2=%x R3=%x SP=%x LR=%x\n",
+            env->regs[15], env->regs[0],  env->regs[1],
+            env->regs[2],  env->regs[13], env->regs[14]);
 #else
 #error Unsupported target architecture
 #endif

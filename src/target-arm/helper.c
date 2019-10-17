@@ -313,6 +313,7 @@ void cpu_state_reset(CPUARMState *env) {
         uint32_t pc;
         uint8_t *rom;
         env->uncached_cpsr &= ~CPSR_I;
+
         rom = rom_ptr(0);
         if (rom) {
             /* We should really use ldl_phys here, in case the guest
@@ -424,7 +425,6 @@ CPUARMState *cpu_arm_init(const char *cpu_model) {
     }
 
     env->cp15.c0_cpuid = id;
-    cpu_state_reset(env);
 
 //    if (arm_feature(env, ARM_FEATURE_NEON)) {
 //        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 51, "arm-neon.xml", 0);
@@ -435,7 +435,16 @@ CPUARMState *cpu_arm_init(const char *cpu_model) {
 //    }
 
     qemu_init_vcpu(env);
+    //move state reset to do_cpu_arm_init
+    //cpu_state_reset(env);
     return env;
+}
+
+
+void do_cpu_arm_init(CPUARMState *env) {
+
+    cpu_state_reset(env);
+
 }
 
 void arm_cpu_set_irq(CPUARMState *env, int level) {
@@ -446,7 +455,6 @@ void arm_cpu_set_irq(CPUARMState *env, int level) {
         cpu_reset_interrupt(env, CPU_INTERRUPT_HARD);
     }
 }
-
 
 struct arm_cpu_t {
     uint32_t id;
@@ -806,8 +814,18 @@ void do_interrupt_v7m(CPUARMState *env)
 
 }
 
+#ifdef CONFIG_SYMBEX
+#include <cpu/se_libcpu.h>
+/* This will be called from S2EExecutor if running concretely; It will
+   in turn call the real ARM IRQ handler with current CPUARMState.*/
+void do_interrupt(CPUARMState *env){
+	g_sqi.exec.do_interrupt_arm(env);
+}
+void se_do_interrupt_arm(CPUARMState *env) {
+#else
 /* Handle a CPU exception.  */
 void do_interrupt(CPUARMState *env) {
+#endif
     uint32_t addr;
     uint32_t mask;
     int new_mode;

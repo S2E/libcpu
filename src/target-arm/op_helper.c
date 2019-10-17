@@ -22,15 +22,9 @@
 #include "helper.h"
 
 
-
-
-
 #define SIGNBIT (uint32_t) 0x80000000
 #define SIGNBIT64 ((uint64_t) 1 << 63)
 
-#ifdef SYMBEX_LLVM_LIB
-#include "llvm-lib.h"
-#endif
 
 struct CPUARMState *env = 0;
 
@@ -81,29 +75,23 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def, uint32_t rn, uint32_t max
 #define _raw _raw_symb
 
 #define SHIFT 0
-#include "softmmu_header.h"
+#include "softmmu_template.h"
 
 #define SHIFT 1
-#include "softmmu_header.h"
+#include "softmmu_template.h"
 
 #define SHIFT 2
-#include "softmmu_header.h"
+#include "softmmu_template.h"
 
 #define SHIFT 3
-#include "softmmu_header.h"
+#include "softmmu_template.h"
 
 #undef _raw
+
+
 #endif
 
-#ifdef CONFIG_SYMBEX
-#include <cpu/se_libcpu.h>
 
-/* This will be called from S2EExecutor if running concretely; It will
-   in turn call the real ARM IRQ handler with current CPUARMState.*/
-void s2e_do_interrupt(void) {
-    s2e_helper_do_interrupt(env);
-}
-#endif
 
 /* try to fill the TLB and return an exception if error. If retaddr is
    NULL, it means that the function was called in C code (i.e. not
@@ -121,7 +109,9 @@ void tlb_fill(CPUArchState *env1, target_ulong addr, target_ulong page_addr, int
         env = env1;
 
 #ifdef CONFIG_SYMBEX
-    s2e_on_tlb_miss(g_s2e, g_s2e_state, addr, is_write);
+     if (unlikely(*g_sqi.events.on_tlb_miss_signals_count)) {
+        g_sqi.events.on_tlb_miss(addr, is_write, retaddr);
+    }   
     ret = cpu_arm_handle_mmu_fault(env, page_addr, is_write, mmu_idx);
 #else
     ret = cpu_arm_handle_mmu_fault(env, addr, is_write, mmu_idx);
@@ -147,10 +137,12 @@ void tlb_fill(CPUArchState *env1, target_ulong addr, target_ulong page_addr, int
                    a virtual CPU fault */
                 cpu_restore_state(tb, env, pc);
             }
-        }
+        };
 
 #ifdef CONFIG_SYMBEX
-        s2e_on_page_fault(g_s2e, g_s2e_state, addr, is_write);
+         if (unlikely(*g_sqi.events.on_page_fault_signals_count)) {
+            g_sqi.events.on_page_fault(addr, is_write, retaddr);
+        }       
 #endif
 
         raise_exception(env->exception_index);
