@@ -346,7 +346,7 @@ void cpu_state_reset(CPUARMState *env) {
     env->kvm_irq = -1;
 }
 
-//static int vfp_gdb_get_reg(CPUARMState *env, uint8_t *buf, int reg) {
+// static int vfp_gdb_get_reg(CPUARMState *env, uint8_t *buf, int reg) {
 //    int nregs;
 //
 //    /* VFP data registers are always little-endian.  */
@@ -378,7 +378,7 @@ void cpu_state_reset(CPUARMState *env) {
 //    return 0;
 //}
 //
-//static int vfp_gdb_set_reg(CPUARMState *env, uint8_t *buf, int reg) {
+// static int vfp_gdb_set_reg(CPUARMState *env, uint8_t *buf, int reg) {
 //    int nregs;
 //
 //    nregs = arm_feature(env, ARM_FEATURE_VFP3) ? 32 : 16;
@@ -426,31 +426,29 @@ CPUARMState *cpu_arm_init(const char *cpu_model) {
 
     env->cp15.c0_cpuid = id;
 
-//    if (arm_feature(env, ARM_FEATURE_NEON)) {
-//        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 51, "arm-neon.xml", 0);
-//    } else if (arm_feature(env, ARM_FEATURE_VFP3)) {
-//        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 35, "arm-vfp3.xml", 0);
-//    } else if (arm_feature(env, ARM_FEATURE_VFP)) {
-//        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 19, "arm-vfp.xml", 0);
-//    }
+    //    if (arm_feature(env, ARM_FEATURE_NEON)) {
+    //        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 51, "arm-neon.xml", 0);
+    //    } else if (arm_feature(env, ARM_FEATURE_VFP3)) {
+    //        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 35, "arm-vfp3.xml", 0);
+    //    } else if (arm_feature(env, ARM_FEATURE_VFP)) {
+    //        gdb_register_coprocessor(env, vfp_gdb_get_reg, vfp_gdb_set_reg, 19, "arm-vfp.xml", 0);
+    //    }
 
     qemu_init_vcpu(env);
-    //move state reset to do_cpu_arm_init
-    //cpu_state_reset(env);
+    // move state reset to do_cpu_arm_init
+    // cpu_state_reset(env);
     return env;
 }
-
 
 void do_cpu_arm_init(CPUARMState *env) {
 
     cpu_state_reset(env);
-
 }
 
 void arm_cpu_set_irq(CPUARMState *env, int level) {
-    
-	if (level) {
-        cpu_interrupt(env,CPU_INTERRUPT_HARD);
+
+    if (level) {
+        cpu_interrupt(env, CPU_INTERRUPT_HARD);
     } else {
         cpu_reset_interrupt(env, CPU_INTERRUPT_HARD);
     }
@@ -596,8 +594,8 @@ uint32_t HELPER(uxtb16)(uint32_t x) {
 
 uint32_t HELPER(clz)(uint32_t x) {
     uint32_t res;
-    res= (uint32_t)clz32(x);
-	return res;
+    res = (uint32_t) clz32(x);
+    return res;
 }
 
 int32_t HELPER(sdiv)(int32_t num, int32_t den) {
@@ -726,11 +724,9 @@ static void do_v7m_exception_exit(CPUARMState *env) {
        pointer.  */
 }
 
-
-void do_interrupt_v7m(CPUARMState *env)
-{
-	uint32_t addr;
-	uint32_t xpsr = xpsr_read(env);
+void do_interrupt_v7m(CPUARMState *env) {
+    uint32_t addr;
+    uint32_t xpsr = xpsr_read(env);
     uint32_t lr;
 
     int exc;
@@ -738,47 +734,47 @@ void do_interrupt_v7m(CPUARMState *env)
 
     lr = 0xfffffff1;
     if (env->v7m.current_sp)
-        lr |= 4; 
-    if (env->v7m.exception == 0) 
-		lr |= 8; 
-    //printf("interreput = 0x%x\n",env->exception_index);
+        lr |= 4;
+    if (env->v7m.exception == 0)
+        lr |= 8;
+    // printf("interreput = 0x%x\n",env->exception_index);
     /* For exceptions we just mark as pending on the NVIC, and let that
        handle it.  */
     switch (env->exception_index) {
-    case EXCP_UDEF:
-        armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_USAGE, false);
-        return;
-    case EXCP_SWI:
-        /* The PC already points to the next instruction.  */
-        armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_SVC, false);
-        return;
-    case EXCP_PREFETCH_ABORT:
-    case EXCP_DATA_ABORT:  
-        armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_MEM, false);
-        break;
-    case EXCP_BKPT:
-        if (semihosting_enabled) {
-            int nr;
-            nr = arm_lduw_code(env->regs[15], env->bswap_code) & 0xff;
-            if (nr == 0xab) {
-                env->regs[15] += 2;
-                env->regs[0] = do_arm_semihosting(env);
-                return;
+        case EXCP_UDEF:
+            armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_USAGE, false);
+            return;
+        case EXCP_SWI:
+            /* The PC already points to the next instruction.  */
+            armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_SVC, false);
+            return;
+        case EXCP_PREFETCH_ABORT:
+        case EXCP_DATA_ABORT:
+            armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_MEM, false);
+            break;
+        case EXCP_BKPT:
+            if (semihosting_enabled) {
+                int nr;
+                nr = arm_lduw_code(env->regs[15], env->bswap_code) & 0xff;
+                if (nr == 0xab) {
+                    env->regs[15] += 2;
+                    env->regs[0] = do_arm_semihosting(env);
+                    return;
+                }
             }
-        }
-        armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_DEBUG, false);
-        return;
-    case EXCP_IRQ:
-        armv7m_nvic_get_pending_irq_info(env->nvic, &exc, &targets_secure);
-        armv7m_nvic_acknowledge_irq(env->nvic);	
-        env->v7m.exception=exc;
-        break;
-    case EXCP_EXCEPTION_EXIT:
-        do_v7m_exception_exit(env);
-        return;
-    default:
-        cpu_abort(env, "Unhandled exception 0x%x\n", env->exception_index);
-        return; /* Never happens.  Keep compiler happy.  */
+            armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_DEBUG, false);
+            return;
+        case EXCP_IRQ:
+            armv7m_nvic_get_pending_irq_info(env->nvic, &exc, &targets_secure);
+            armv7m_nvic_acknowledge_irq(env->nvic);
+            env->v7m.exception = exc;
+            break;
+        case EXCP_EXCEPTION_EXIT:
+            do_v7m_exception_exit(env);
+            return;
+        default:
+            cpu_abort(env, "Unhandled exception 0x%x\n", env->exception_index);
+            return; /* Never happens.  Keep compiler happy.  */
     }
 
     /* Align stack pointer.  */
@@ -796,30 +792,28 @@ void do_interrupt_v7m(CPUARMState *env)
     v7m_push(env, env->regs[2]);
     v7m_push(env, env->regs[1]);
     v7m_push(env, env->regs[0]);
-    
 
     /* Now we've done everything that might cause a derived exception
      * we can go ahead and activate whichever exception we're going to
      * take (which might now be the derived exception).
      */
-    
+
     /* Switch to the msp stack.  */
-	switch_v7m_sp(env, 0);	
+    switch_v7m_sp(env, 0);
     /* Clear IT bits */
     env->condexec_bits = 0;
     env->regs[14] = lr;
     addr = ldl_phys(env->v7m.vecbase + env->v7m.exception * 4);
     env->regs[15] = addr & 0xfffffffe;
     env->thumb = addr & 1;
-
 }
 
 #ifdef CONFIG_SYMBEX
 #include <cpu/se_libcpu.h>
 /* This will be called from S2EExecutor if running concretely; It will
    in turn call the real ARM IRQ handler with current CPUARMState.*/
-void do_interrupt(CPUARMState *env){
-	g_sqi.exec.do_interrupt_arm(env);
+void do_interrupt(CPUARMState *env) {
+    g_sqi.exec.do_interrupt_arm(env);
 }
 void se_do_interrupt_arm(CPUARMState *env) {
 #else
@@ -2268,7 +2262,7 @@ void HELPER(v7m_msr)(CPUARMState *env, uint32_t reg, uint32_t val) {
             break;
         case 18: /* BASEPRI_MAX */
             val &= 0xff;
-            if (val != 0 && (val < env->v7m.basepri || env->v7m.basepri == 0)){
+            if (val != 0 && (val < env->v7m.basepri || env->v7m.basepri == 0)) {
                 env->v7m.basepri = val;
                 env->kvm_exit_code = 1;
                 cpu_exit(env);

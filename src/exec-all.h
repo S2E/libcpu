@@ -176,13 +176,11 @@ extern int tb_invalidated_flag;
 #define DATA_SIZE 8
 #include "softmmu_header.h"
 
-
 #undef ACCESS_TYPE
 #undef MEMSUFFIX
 #undef env
 #if defined(TARGET_ARM)
-static inline uint32_t arm_ldl_code(uint32_t addr, bool do_swap)
-{
+static inline uint32_t arm_ldl_code(uint32_t addr, bool do_swap) {
     uint32_t insn = ldl_code(addr);
     if (do_swap) {
         return bswap32(insn);
@@ -191,8 +189,7 @@ static inline uint32_t arm_ldl_code(uint32_t addr, bool do_swap)
 }
 
 /* Ditto, for a halfword (Thumb) instruction */
-static inline uint16_t arm_lduw_code(uint32_t addr, bool do_swap)
-{
+static inline uint16_t arm_lduw_code(uint32_t addr, bool do_swap) {
     uint16_t insn = lduw_code(addr);
     if (do_swap) {
         return bswap16(insn);
@@ -200,7 +197,6 @@ static inline uint16_t arm_lduw_code(uint32_t addr, bool do_swap)
     return insn;
 }
 #endif
-
 
 tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr);
 

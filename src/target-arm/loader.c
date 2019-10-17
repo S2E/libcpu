@@ -15,11 +15,10 @@ struct Rom {
 };
 static QTAILQ_HEAD(, Rom) roms = QTAILQ_HEAD_INITIALIZER(roms);
 
-static Rom *find_rom(target_phys_addr_t addr)
-{
+static Rom *find_rom(target_phys_addr_t addr) {
     Rom *rom;
 
-    QTAILQ_FOREACH(rom, &roms, next) {
+    QTAILQ_FOREACH (rom, &roms, next) {
         if (rom->fw_file) {
             continue;
         }
@@ -33,8 +32,7 @@ static Rom *find_rom(target_phys_addr_t addr)
     }
     return NULL;
 }
-void *rom_ptr(target_phys_addr_t addr)
-{
+void *rom_ptr(target_phys_addr_t addr) {
     Rom *rom;
 
     rom = find_rom(addr);

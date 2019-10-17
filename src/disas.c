@@ -26,7 +26,6 @@
 #error unsupported target CPU
 #endif
 
-
 #include <cpu/disas.h>
 #include <cpu/memdbg.h>
 

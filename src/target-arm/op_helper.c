@@ -21,10 +21,8 @@
 #include "dyngen-exec.h"
 #include "helper.h"
 
-
 #define SIGNBIT (uint32_t) 0x80000000
 #define SIGNBIT64 ((uint64_t) 1 << 63)
-
 
 struct CPUARMState *env = 0;
 
@@ -88,10 +86,7 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def, uint32_t rn, uint32_t max
 
 #undef _raw
 
-
 #endif
-
-
 
 /* try to fill the TLB and return an exception if error. If retaddr is
    NULL, it means that the function was called in C code (i.e. not
@@ -109,9 +104,9 @@ void tlb_fill(CPUArchState *env1, target_ulong addr, target_ulong page_addr, int
         env = env1;
 
 #ifdef CONFIG_SYMBEX
-     if (unlikely(*g_sqi.events.on_tlb_miss_signals_count)) {
+    if (unlikely(*g_sqi.events.on_tlb_miss_signals_count)) {
         g_sqi.events.on_tlb_miss(addr, is_write, retaddr);
-    }   
+    }
     ret = cpu_arm_handle_mmu_fault(env, page_addr, is_write, mmu_idx);
 #else
     ret = cpu_arm_handle_mmu_fault(env, addr, is_write, mmu_idx);
@@ -140,9 +135,9 @@ void tlb_fill(CPUArchState *env1, target_ulong addr, target_ulong page_addr, int
         };
 
 #ifdef CONFIG_SYMBEX
-         if (unlikely(*g_sqi.events.on_page_fault_signals_count)) {
+        if (unlikely(*g_sqi.events.on_page_fault_signals_count)) {
             g_sqi.events.on_page_fault(addr, is_write, retaddr);
-        }       
+        }
 #endif
 
         raise_exception(env->exception_index);

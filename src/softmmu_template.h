@@ -137,7 +137,6 @@ DATA_TYPE glue(glue(io_read, SUFFIX), MMUSUFFIX)(ENV_PARAM target_phys_addr_t ph
                                                  void *retaddr) {
     DATA_TYPE res;
     const struct MemoryDescOps *ops = phys_get_ops(physaddr);
-
     physaddr = (physaddr & TARGET_PAGE_MASK) + addr;
 
 #if defined(CONFIG_SYMBEX) && defined(CONFIG_SYMBEX_MP)
@@ -168,6 +167,7 @@ DATA_TYPE glue(glue(io_read, SUFFIX), MMUSUFFIX)(ENV_PARAM target_phys_addr_t ph
     env->mem_io_pc = (uintptr_t) retaddr;
 
     SE_SET_MEM_IO_VADDR(env, addr, 0);
+
 #if SHIFT <= 2
     res = ops->read(physaddr, 1 << SHIFT);
 #else
@@ -285,6 +285,7 @@ redo:
 #ifdef CONFIG_SYMBEX
             env->se_tlb_current = tlb_entry;
 #endif
+
             res = glue(glue(io_read_chk, SUFFIX), MMUSUFFIX)(ENV_VAR ioaddr, addr, retaddr);
 
             INSTR_AFTER_MEMORY_ACCESS(addr, res, MEM_TRACE_FLAG_IO, retaddr);

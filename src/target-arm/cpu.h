@@ -211,13 +211,13 @@ uint32_t vfp_get_fpscr(CPUARMState *env);
 void vfp_set_fpscr(CPUARMState *env, uint32_t val);
 
 /* enum arm_cpu_mode { */
-    // ARM_CPU_MODE_USR = 0x10,
-    // ARM_CPU_MODE_FIQ = 0x11,
-    // ARM_CPU_MODE_IRQ = 0x12,
-    // ARM_CPU_MODE_SVC = 0x13,
-    // ARM_CPU_MODE_ABT = 0x17,
-    // ARM_CPU_MODE_UND = 0x1b,
-    // ARM_CPU_MODE_SYS = 0x1f
+// ARM_CPU_MODE_USR = 0x10,
+// ARM_CPU_MODE_FIQ = 0x11,
+// ARM_CPU_MODE_IRQ = 0x12,
+// ARM_CPU_MODE_SVC = 0x13,
+// ARM_CPU_MODE_ABT = 0x17,
+// ARM_CPU_MODE_UND = 0x1b,
+// ARM_CPU_MODE_SYS = 0x1f
 /* }; */
 
 /* VFP system registers.  */
@@ -240,31 +240,31 @@ void vfp_set_fpscr(CPUARMState *env, uint32_t val);
 #define ARM_IWMMXT_wCGR3 11
 
 /* enum arm_features { */
-    // ARM_FEATURE_VFP,
-    // ARM_FEATURE_AUXCR,  [> ARM1026 Auxiliary control register.  <]
-    // ARM_FEATURE_XSCALE, [> Intel XScale extensions.  <]
-    // ARM_FEATURE_IWMMXT, [> Intel iwMMXt extension.  <]
-    // ARM_FEATURE_V6,
-    // ARM_FEATURE_V6K,
-    // ARM_FEATURE_V7,
-    // ARM_FEATURE_THUMB2,
-    // ARM_FEATURE_MPU, [> Only has Memory Protection Unit, not full MMU.  <]
-    // ARM_FEATURE_VFP3,
-    // ARM_FEATURE_VFP_FP16,
-    // ARM_FEATURE_NEON,
-    // ARM_FEATURE_THUMB_DIV, [> divide supported in Thumb encoding <]
-    // ARM_FEATURE_M,         [> Microcontroller profile.  <]
-    // ARM_FEATURE_OMAPCP,    [> OMAP specific CP15 ops handling.  <]
-    // ARM_FEATURE_THUMB2EE,
-    // ARM_FEATURE_V7MP, [> v7 Multiprocessing Extensions <]
-    // ARM_FEATURE_V4T,
-    // ARM_FEATURE_V5,
-    // ARM_FEATURE_STRONGARM,
-    // ARM_FEATURE_VAPA,    [> cp15 VA to PA lookups <]
-    // ARM_FEATURE_ARM_DIV, [> divide supported in ARM encoding <]
-    // ARM_FEATURE_VFP4,    [> VFPv4 (implies that NEON is v2) <]
-    // ARM_FEATURE_GENERIC_TIMER,
-    // ARM_FEATURE_MVFR, [> Media and VFP Feature Registers 0 and 1 <]
+// ARM_FEATURE_VFP,
+// ARM_FEATURE_AUXCR,  [> ARM1026 Auxiliary control register.  <]
+// ARM_FEATURE_XSCALE, [> Intel XScale extensions.  <]
+// ARM_FEATURE_IWMMXT, [> Intel iwMMXt extension.  <]
+// ARM_FEATURE_V6,
+// ARM_FEATURE_V6K,
+// ARM_FEATURE_V7,
+// ARM_FEATURE_THUMB2,
+// ARM_FEATURE_MPU, [> Only has Memory Protection Unit, not full MMU.  <]
+// ARM_FEATURE_VFP3,
+// ARM_FEATURE_VFP_FP16,
+// ARM_FEATURE_NEON,
+// ARM_FEATURE_THUMB_DIV, [> divide supported in Thumb encoding <]
+// ARM_FEATURE_M,         [> Microcontroller profile.  <]
+// ARM_FEATURE_OMAPCP,    [> OMAP specific CP15 ops handling.  <]
+// ARM_FEATURE_THUMB2EE,
+// ARM_FEATURE_V7MP, [> v7 Multiprocessing Extensions <]
+// ARM_FEATURE_V4T,
+// ARM_FEATURE_V5,
+// ARM_FEATURE_STRONGARM,
+// ARM_FEATURE_VAPA,    [> cp15 VA to PA lookups <]
+// ARM_FEATURE_ARM_DIV, [> divide supported in ARM encoding <]
+// ARM_FEATURE_VFP4,    [> VFPv4 (implies that NEON is v2) <]
+// ARM_FEATURE_GENERIC_TIMER,
+// ARM_FEATURE_MVFR, [> Media and VFP Feature Registers 0 and 1 <]
 /* }; */
 enum arm_features {
     ARM_FEATURE_VFP,
@@ -280,53 +280,53 @@ enum arm_features {
     ARM_FEATURE_VFP_FP16,
     ARM_FEATURE_NEON,
     ARM_FEATURE_THUMB_DIV, /* divide supported in Thumb encoding */
-    ARM_FEATURE_M, /* Microcontroller profile.  */
-    ARM_FEATURE_OMAPCP, /* OMAP specific CP15 ops handling.  */
+    ARM_FEATURE_M,         /* Microcontroller profile.  */
+    ARM_FEATURE_OMAPCP,    /* OMAP specific CP15 ops handling.  */
     ARM_FEATURE_THUMB2EE,
-    ARM_FEATURE_V7MP,    /* v7 Multiprocessing Extensions */
+    ARM_FEATURE_V7MP, /* v7 Multiprocessing Extensions */
     ARM_FEATURE_V7VE, /* v7 Virtualization Extensions (non-EL2 parts) */
     ARM_FEATURE_V4T,
     ARM_FEATURE_V5,
     ARM_FEATURE_STRONGARM,
-    ARM_FEATURE_VAPA, /* cp15 VA to PA lookups */
+    ARM_FEATURE_VAPA,    /* cp15 VA to PA lookups */
     ARM_FEATURE_ARM_DIV, /* divide supported in ARM encoding */
-    ARM_FEATURE_VFP4, /* VFPv4 (implies that NEON is v2) */
+    ARM_FEATURE_VFP4,    /* VFPv4 (implies that NEON is v2) */
     ARM_FEATURE_GENERIC_TIMER,
-    ARM_FEATURE_MVFR, /* Media and VFP Feature Registers 0 and 1 */
-    ARM_FEATURE_DUMMY_C15_REGS, /* RAZ/WI all of cp15 crn=15 */
+    ARM_FEATURE_MVFR,             /* Media and VFP Feature Registers 0 and 1 */
+    ARM_FEATURE_DUMMY_C15_REGS,   /* RAZ/WI all of cp15 crn=15 */
     ARM_FEATURE_CACHE_TEST_CLEAN, /* 926/1026 style test-and-clean ops */
-    ARM_FEATURE_CACHE_DIRTY_REG, /* 1136/1176 cache dirty status register */
-    ARM_FEATURE_CACHE_BLOCK_OPS, /* v6 optional cache block operations */
-    ARM_FEATURE_MPIDR, /* has cp15 MPIDR */
-    ARM_FEATURE_PXN, /* has Privileged Execute Never bit */
-    ARM_FEATURE_LPAE, /* has Large Physical Address Extension */
+    ARM_FEATURE_CACHE_DIRTY_REG,  /* 1136/1176 cache dirty status register */
+    ARM_FEATURE_CACHE_BLOCK_OPS,  /* v6 optional cache block operations */
+    ARM_FEATURE_MPIDR,            /* has cp15 MPIDR */
+    ARM_FEATURE_PXN,              /* has Privileged Execute Never bit */
+    ARM_FEATURE_LPAE,             /* has Large Physical Address Extension */
     ARM_FEATURE_V8,
-    ARM_FEATURE_AARCH64, /* supports 64 bit mode */
-    ARM_FEATURE_V8_AES, /* implements AES part of v8 Crypto Extensions */
-    ARM_FEATURE_CBAR, /* has cp15 CBAR */
-    ARM_FEATURE_CRC, /* ARMv8 CRC instructions */
-    ARM_FEATURE_CBAR_RO, /* has cp15 CBAR and it is read-only */
-    ARM_FEATURE_EL2, /* has EL2 Virtualization support */
-    ARM_FEATURE_EL3, /* has EL3 Secure monitor support */
-    ARM_FEATURE_V8_SHA1, /* implements SHA1 part of v8 Crypto Extensions */
-    ARM_FEATURE_V8_SHA256, /* implements SHA256 part of v8 Crypto Extensions */
-    ARM_FEATURE_V8_PMULL, /* implements PMULL part of v8 Crypto Extensions */
-    ARM_FEATURE_THUMB_DSP, /* DSP insns supported in the Thumb encodings */
-    ARM_FEATURE_PMU, /* has PMU support */
-    ARM_FEATURE_VBAR, /* has cp15 VBAR */
+    ARM_FEATURE_AARCH64,    /* supports 64 bit mode */
+    ARM_FEATURE_V8_AES,     /* implements AES part of v8 Crypto Extensions */
+    ARM_FEATURE_CBAR,       /* has cp15 CBAR */
+    ARM_FEATURE_CRC,        /* ARMv8 CRC instructions */
+    ARM_FEATURE_CBAR_RO,    /* has cp15 CBAR and it is read-only */
+    ARM_FEATURE_EL2,        /* has EL2 Virtualization support */
+    ARM_FEATURE_EL3,        /* has EL3 Secure monitor support */
+    ARM_FEATURE_V8_SHA1,    /* implements SHA1 part of v8 Crypto Extensions */
+    ARM_FEATURE_V8_SHA256,  /* implements SHA256 part of v8 Crypto Extensions */
+    ARM_FEATURE_V8_PMULL,   /* implements PMULL part of v8 Crypto Extensions */
+    ARM_FEATURE_THUMB_DSP,  /* DSP insns supported in the Thumb encodings */
+    ARM_FEATURE_PMU,        /* has PMU support */
+    ARM_FEATURE_VBAR,       /* has cp15 VBAR */
     ARM_FEATURE_M_SECURITY, /* M profile Security Extension */
-    ARM_FEATURE_JAZELLE, /* has (trivial) Jazelle implementation */
-    ARM_FEATURE_SVE, /* has Scalable Vector Extension */
-    ARM_FEATURE_V8_SHA512, /* implements SHA512 part of v8 Crypto Extensions */
-    ARM_FEATURE_V8_SHA3, /* implements SHA3 part of v8 Crypto Extensions */
-    ARM_FEATURE_V8_SM3, /* implements SM3 part of v8 Crypto Extensions */
-    ARM_FEATURE_V8_SM4, /* implements SM4 part of v8 Crypto Extensions */
+    ARM_FEATURE_JAZELLE,    /* has (trivial) Jazelle implementation */
+    ARM_FEATURE_SVE,        /* has Scalable Vector Extension */
+    ARM_FEATURE_V8_SHA512,  /* implements SHA512 part of v8 Crypto Extensions */
+    ARM_FEATURE_V8_SHA3,    /* implements SHA3 part of v8 Crypto Extensions */
+    ARM_FEATURE_V8_SM3,     /* implements SM3 part of v8 Crypto Extensions */
+    ARM_FEATURE_V8_SM4,     /* implements SM4 part of v8 Crypto Extensions */
     ARM_FEATURE_V8_ATOMICS, /* ARMv8.1-Atomics feature */
-    ARM_FEATURE_V8_RDM, /* implements v8.1 simd round multiply */
+    ARM_FEATURE_V8_RDM,     /* implements v8.1 simd round multiply */
     ARM_FEATURE_V8_DOTPROD, /* implements v8.2 simd dot product */
-    ARM_FEATURE_V8_FP16, /* implements v8.2 half-precision float */
-    ARM_FEATURE_V8_FCMA, /* has complex number part of v8.3 extensions.  */
-    ARM_FEATURE_M_MAIN, /* M profile Main Extension */
+    ARM_FEATURE_V8_FP16,    /* implements v8.2 half-precision float */
+    ARM_FEATURE_V8_FCMA,    /* has complex number part of v8.3 extensions.  */
+    ARM_FEATURE_M_MAIN,     /* M profile Main Extension */
 };
 static inline int arm_feature(CPUARMState *env, int feature) {
     return (env->features & (1ULL << feature)) != 0;
@@ -394,7 +394,7 @@ void cpu_arm_set_cp_io(CPUARMState *env, int cpnum, ARMReadCPFunc *cp_read, ARMW
 #define MMU_USER_IDX 1
 
 /* static inline int cpu_mmu_index(CPUARMState *env) { */
-    // return (env->uncached_cpsr & CPSR_M) == ARM_CPU_MODE_USR ? 1 : 0;
+// return (env->uncached_cpsr & CPSR_M) == ARM_CPU_MODE_USR ? 1 : 0;
 // }
 
 #include "cpu-all.h"

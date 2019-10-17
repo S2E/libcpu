@@ -19,10 +19,10 @@
 #ifndef CPU_ALL_H
 #define CPU_ALL_H
 
-#include "bswap.h"
-#include "qemu-common.h"
 #include <cpu/cpu-common.h>
 #include <cpu/exec.h>
+#include "bswap.h"
+#include "qemu-common.h"
 
 #if defined(TARGET_I386)
 #include <cpu/i386/cpu.h>
@@ -31,8 +31,6 @@
 #else
 #error unsupported target CPU
 #endif
-
-
 
 #ifdef CONFIG_SYMBEX
 #include <cpu/se_libcpu.h>
@@ -151,7 +149,6 @@
 #define stq_be_raw(p, v) stq_be_p(saddr((p)), v)
 #define stfl_be_raw(p, v) stfl_be_p(saddr((p)), v)
 #define stfq_be_raw(p, v) stfq_be_p(saddr((p)), v)
-
 
 #else /* CONFIG_SYMBEX */
 
@@ -379,7 +376,6 @@ void run_on_cpu(CPUArchState *env, void (*func)(void *data), void *data);
 #define CPU_LOG_RESET (1 << 9)
 #define CPU_LOG_LLVM_IR (1 << 10)
 #define CPU_LOG_LLVM_ASM (1 << 11)
-
 
 void cpu_tlb_update_dirty(CPUArchState *env);
 

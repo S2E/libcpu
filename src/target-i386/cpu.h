@@ -214,7 +214,6 @@ static inline uint64_t __WR_env_dyn(void *p, unsigned size, uint64_t v) {
 #define __RR_env_dyn(p, size) *p
 #endif
 
-
 #ifdef ENABLE_PRECISE_EXCEPTION_DEBUGGING
 #define WR_se_pc(cpu, value) cpu->precise_eip = value
 #else
