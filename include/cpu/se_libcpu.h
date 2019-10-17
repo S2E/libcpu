@@ -41,7 +41,6 @@ struct CPUARMState;
 #error Unsupported target architecture
 #endif
 
-
 typedef uintptr_t (*se_libcpu_tb_exec_t)(CPUArchState *env1, struct TranslationBlock *tb);
 typedef void (*se_do_interrupt_all_t)(int intno, int is_int, int error_code, uintptr_t next_eip, int is_hw);
 typedef void (*se_do_interrupt_arm_t)(CPUArchState *env1);

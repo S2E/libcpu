@@ -20,7 +20,6 @@
 
 #include <cpu/arm/helper.h>
 
-
 #define _RM_EXCP (_M_CF | _M_VF | _M_NF | _M_ZF)
 #define _WM_EXCP (_M_CF | _M_VF | _M_NF | _M_ZF)
 #define _AM_EXCP 0
@@ -96,11 +95,11 @@ DEF_HELPER_0(wfi, void)
 DEF_HELPER_2(get_r13_banked, i32, env, i32)
 DEF_HELPER_3(set_r13_banked, void, env, i32, i32)
 
-//DEF_HELPER_2(get_r14_banked, i32, env, i32)
-//DEF_HELPER_3(set_r14_banked, void, env, i32, i32)
+// DEF_HELPER_2(get_r14_banked, i32, env, i32)
+// DEF_HELPER_3(set_r14_banked, void, env, i32, i32)
 
-//DEF_HELPER_2(get_spsr_banked, i32, env, i32)
-//DEF_HELPER_3(set_spsr_banked, void, env, i32, i32)
+// DEF_HELPER_2(get_spsr_banked, i32, env, i32)
+// DEF_HELPER_3(set_spsr_banked, void, env, i32, i32)
 
 DEF_HELPER_3(v7m_msr, void, env, i32, i32)
 DEF_HELPER_2(v7m_mrs, i32, env, i32)
@@ -294,9 +293,9 @@ DEF_HELPER_3(neon_qshlu_s16, i32, env, i32, i32);
 DEF_HELPER_3(neon_qshlu_s32, i32, env, i32, i32);
 DEF_HELPER_3(neon_qshlu_s64, i64, env, i64, i64);
 DEF_HELPER_3(neon_qrshl_u8, i32, env, i32, i32)
-//DEF_HELPER_3(neon_qrshl_s8, i32, env, i32, i32)
+// DEF_HELPER_3(neon_qrshl_s8, i32, env, i32, i32)
 DEF_HELPER_3(neon_qrshl_u16, i32, env, i32, i32)
-//DEF_HELPER_3(neon_qrshl_s16, i32, env, i32, i32)
+// DEF_HELPER_3(neon_qrshl_s16, i32, env, i32, i32)
 DEF_HELPER_3(neon_qrshl_u32, i32, env, i32, i32)
 DEF_HELPER_3(neon_qrshl_s32, i32, env, i32, i32)
 DEF_HELPER_3(neon_qrshl_u64, i64, env, i64, i64)

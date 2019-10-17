@@ -31,11 +31,9 @@
 #include <cpu/types.h>
 #include <inttypes.h>
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 struct DeviceState;
 typedef struct DeviceState DeviceState;

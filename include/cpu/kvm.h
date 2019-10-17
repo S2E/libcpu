@@ -9,21 +9,18 @@
 
 #include <linux/types.h>
 
-
 #ifndef BIT
 #define BIT(n) (1 << (n))
 #endif
 
-
 #include <cpu/config.h>
-#if defined(TARGET_I386)|| defined(TARGET_X86_64)
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
 #include <asm/kvm.h>
 #elif defined(TARGET_ARM)
 #include <cpu/arm/kvm_arm.h>
 #else
 #error unsupported target CPU
 #endif
-
 
 #include <linux/ioctl.h>
 
@@ -327,8 +324,8 @@ struct kvm_run {
         /* KVM_EXIT_SYSTEM_EVENT */
         struct {
 #define KVM_SYSTEM_EVENT_SHUTDOWN 1
-#define KVM_SYSTEM_EVENT_RESET    2
-#define KVM_SYSTEM_EVENT_CRASH    3
+#define KVM_SYSTEM_EVENT_RESET 2
+#define KVM_SYSTEM_EVENT_CRASH 3
             __u32 type;
             __u64 flags;
         } system_event;
@@ -948,8 +945,7 @@ struct kvm_dirty_tlb {
 #define KVM_REG_SIZE_U512 0x0060000000000000ULL
 #define KVM_REG_SIZE_U1024 0x0070000000000000ULL
 
-#define KVM_REG_SIZE(id)						\
-	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+#define KVM_REG_SIZE(id) (1U << (((id) &KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
 
 struct kvm_reg_list {
     __u64 n; /* number of regs */
@@ -1107,7 +1103,6 @@ struct kvm_s390_ucas_mapping {
  */
 #define KVM_RUN _IO(KVMIO, 0x80)
 
-
 #define KVM_GET_REGS _IOR(KVMIO, 0x81, struct kvm_regs)
 #define KVM_SET_REGS _IOW(KVMIO, 0x82, struct kvm_regs)
 #define KVM_GET_SREGS _IOR(KVMIO, 0x83, struct kvm_sregs)
@@ -1117,9 +1112,6 @@ struct kvm_s390_ucas_mapping {
 #define KVM_SET_M_REGS _IOW(KVMIO, 0xc1, struct kvm_m_regs)
 #define KVM_GET_M_SREGS _IOR(KVMIO, 0xc2, struct kvm_m_sregs)
 #define KVM_SET_M_SREGS _IOW(KVMIO, 0xc3, struct kvm_m_sregs)
-
-
-
 
 #define KVM_TRANSLATE _IOWR(KVMIO, 0x85, struct kvm_translation)
 #define KVM_INTERRUPT _IOW(KVMIO, 0x86, struct kvm_interrupt)

@@ -145,7 +145,6 @@ typedef struct CPUARMState {
     uint32_t teecr;
     uint32_t teehbr;
 
-
     /* VFP coprocessor state.  */
     struct {
         float64 regs[32];
@@ -191,7 +190,7 @@ typedef struct CPUARMState {
     CPU_COMMON
 
     /* These fields after the common ones so they are preserved on reset.  */
-        
+
     /* Internal CPU feature flags.  */
     uint32_t features;
     /* Coprocessor IO used by peripherals */
@@ -206,12 +205,12 @@ typedef struct CPUARMState {
     /* For KVM */
     int kvm_request_interrupt_window;
     int kvm_irq;
-    int kvm_exit_code; //now only used for msr
+    int kvm_exit_code; // now only used for msr
     uint8_t timer_interrupt_disabled;
 
 } CPUARMState;
 CPUARMState *cpu_arm_init(const char *cpu_model);
-void do_cpu_arm_init(CPUARMState *env); 
+void do_cpu_arm_init(CPUARMState *env);
 int cpu_arm_exec(CPUARMState *s);
 
 void arm_cpu_set_irq(CPUARMState *env, int level);

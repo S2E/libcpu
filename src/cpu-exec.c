@@ -128,7 +128,8 @@ static TranslationBlock *tb_find_slow(CPUArchState *env, target_ulong pc, target
     }
 not_found:
     /* if no translated code available, then translate it now */
-    DPRINTF("   if no translated code available, then translate it now pc=0x%x, cs_base=0x%x, flags= 0x%lx\n", pc, cs_base, flags);
+    DPRINTF("   if no translated code available, then translate it now pc=0x%x, cs_base=0x%x, flags= 0x%lx\n", pc,
+            cs_base, flags);
     tb = tb_gen_code(env, pc, cs_base, flags, 0);
     ++g_cpu_stats.tb_regens;
 
@@ -160,8 +161,8 @@ static inline TranslationBlock *tb_find_fast(CPUArchState *env) {
         tb_flush(env);
     }
 #endif
-    
-    DPRINTF("Current pc=0x%x: \n",env->regs[15]);
+
+    DPRINTF("Current pc=0x%x: \n", env->regs[15]);
 
     /* we record a subset of the CPU state. It will
        always be the same before a given translated block
@@ -358,7 +359,6 @@ static bool process_interrupt_request(CPUArchState *env) {
 #error Unsupported target architecture
 #endif
 
-
     if (unlikely(env->singlestep_enabled & SSTEP_NOIRQ)) {
         /* Mask out external interrupts for this step. */
         interrupt_request &= ~CPU_INTERRUPT_SSTEP_MASK;
@@ -452,7 +452,7 @@ static bool process_interrupt_request(CPUArchState *env) {
     // in case basepri has not been synced  so add exit code condition
     if (interrupt_request & CPU_INTERRUPT_HARD &&
         ((IS_M(env) && env->regs[15] < 0xfffffff0) || !(env->uncached_cpsr & CPSR_I)) &&
-         (armv7m_nvic_can_take_pending_exception(env->nvic)) && (env->kvm_exit_code == 0)) {
+        (armv7m_nvic_can_take_pending_exception(env->nvic)) && (env->kvm_exit_code == 0)) {
         env->exception_index = EXCP_IRQ;
         do_interrupt(env);
         has_interrupt = true;
@@ -665,8 +665,6 @@ int cpu_exec(CPUArchState *env) {
 #else
 #error Unsupported target architecture
 #endif
-
-
 
     env->current_tb = NULL;
 
