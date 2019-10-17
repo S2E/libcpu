@@ -1103,10 +1103,21 @@ struct kvm_s390_ucas_mapping {
  * ioctls for vcpu fds
  */
 #define KVM_RUN _IO(KVMIO, 0x80)
+
+
 #define KVM_GET_REGS _IOR(KVMIO, 0x81, struct kvm_regs)
 #define KVM_SET_REGS _IOW(KVMIO, 0x82, struct kvm_regs)
 #define KVM_GET_SREGS _IOR(KVMIO, 0x83, struct kvm_sregs)
 #define KVM_SET_SREGS _IOW(KVMIO, 0x84, struct kvm_sregs)
+
+#define KVM_GET_M_REGS _IOR(KVMIO, 0xc0, struct kvm_m_regs)
+#define KVM_SET_M_REGS _IOW(KVMIO, 0xc1, struct kvm_m_regs)
+#define KVM_GET_M_SREGS _IOR(KVMIO, 0xc2, struct kvm_m_sregs)
+#define KVM_SET_M_SREGS _IOW(KVMIO, 0xc3, struct kvm_m_sregs)
+
+
+
+
 #define KVM_TRANSLATE _IOWR(KVMIO, 0x85, struct kvm_translation)
 #define KVM_INTERRUPT _IOW(KVMIO, 0x86, struct kvm_interrupt)
 /* KVM_DEBUG_GUEST is no longer supported, use KVM_SET_GUEST_DEBUG instead */
