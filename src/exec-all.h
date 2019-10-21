@@ -91,10 +91,10 @@ void gen_intermediate_code_pc(CPUArchState *env, struct TranslationBlock *tb);
 int cpu_gen_flush_needed(void);
 void cpu_gen_flush(void);
 void cpu_gen_init_opc(void);
-void se_restore_state_to_opc(CPUX86State *env, TranslationBlock *tb, target_ulong pc, int cc_op, target_ulong next_pc);
+void se_restore_state_to_opc(CPUArchState *env, TranslationBlock *tb, target_ulong pc, int cc_op, target_ulong next_pc);
 #endif
 void restore_state_to_opc(CPUArchState *env, struct TranslationBlock *tb, int pc_pos);
-int restore_state_to_next_pc(CPUX86State *env, TranslationBlock *tb);
+int restore_state_to_next_pc(CPUArchState *env, TranslationBlock *tb);
 
 #ifdef CONFIG_SYMBEX
 int cpu_gen_llvm(CPUArchState *env, TranslationBlock *tb);
@@ -185,6 +185,9 @@ tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr);
 typedef void(CPUDebugExcpHandler)(CPUArchState *env);
 
 CPUDebugExcpHandler *cpu_set_debug_excp_handler(CPUDebugExcpHandler *handler);
+
+/* vl.c */
+extern int singlestep;
 
 /* cpu-exec.c */
 extern volatile sig_atomic_t exit_request;

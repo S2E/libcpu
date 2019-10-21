@@ -19,10 +19,10 @@
 #ifndef BSWAP_H
 #define BSWAP_H
 
-#include <cpu/config-host.h>
-
 #include <inttypes.h>
-#include "softfloat.h"
+
+#include <cpu/config-host.h>
+#include <fpu/softfloat.h>
 
 #ifdef CONFIG_MACHINE_BSWAP_H
 #include <machine/bswap.h>

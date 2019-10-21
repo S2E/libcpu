@@ -20,6 +20,7 @@
 #define CPU_I386_H
 
 #include <assert.h>
+
 #include <cpu/common.h>
 #include <cpu/interrupt.h>
 #include <cpu/tb.h>
@@ -94,9 +95,11 @@ static inline target_ulong __RR_env_raw(CPUX86State *cpuState, unsigned offset, 
     } else {
         target_ulong result = 0;
         g_sqi.regs.read_concrete(offset, (uint8_t *) &result, size);
+
         return result;
     }
 }
+
 static inline void __WR_env_raw(CPUX86State *cpuState, unsigned offset, target_ulong value, unsigned size) {
     if (likely(*g_sqi.mode.fast_concrete_invocation)) {
         switch (size) {
@@ -180,7 +183,6 @@ static inline uint64_t __WR_env_dyn(void *p, unsigned size, uint64_t v) {
 }
 
 #define RR_cpu(cpu, reg) ((__typeof__(cpu->reg)) __RR_env_raw(cpu, offsetof(CPUX86State, reg), sizeof(cpu->reg)))
-
 #define WR_cpu(cpu, reg, value) __WR_env_raw(cpu, offsetof(CPUX86State, reg), (target_ulong) value, sizeof(cpu->reg))
 
 #define RR_cpu_fp80(cpu, reg) (__RR_env_floatx80(cpu, offsetof(CPUX86State, reg)))
@@ -212,10 +214,11 @@ static inline uint64_t __WR_env_dyn(void *p, unsigned size, uint64_t v) {
 #define __RR_env_dyn(p, size) *p
 #endif
 
+
 #ifdef ENABLE_PRECISE_EXCEPTION_DEBUGGING
-#define WR_se_eip(cpu, value) cpu->precise_eip = value
+#define WR_se_pc(cpu, value) cpu->precise_eip = value
 #else
-#define WR_se_eip(cpu, value)
+#define WR_se_pc(cpu, value)
 #endif
 
 uint32_t compute_eflags(void);
@@ -276,7 +279,7 @@ static inline void cpu_x86_load_seg_cache(CPUX86State *env, int seg_reg, unsigne
 }
 
 static inline void cpu_x86_load_seg_cache_sipi(CPUX86State *env, int sipi_vector) {
-    WR_se_eip(env, 0);
+    WR_se_pc(env, 0);
     env->eip = 0;
     cpu_x86_load_seg_cache(env, R_CS, sipi_vector << 8, sipi_vector << 12, env->segs[R_CS].limit,
                            env->segs[R_CS].flags);
@@ -454,7 +457,7 @@ void optimize_flags_init(void);
 #include "exec-all.h"
 
 static inline void cpu_pc_from_tb(CPUX86State *env, TranslationBlock *tb) {
-    WR_se_eip(env, tb->pc - tb->cs_base);
+    WR_se_pc(env, tb->pc - tb->cs_base);
     env->eip = tb->pc - tb->cs_base;
 }
 

@@ -16,9 +16,11 @@
 /// You should have received a copy of the GNU Library General Public
 /// License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
-#include <cpu/ioport.h>
 #include <math.h>
 #include <timer.h>
+
+#include <cpu/ioport.h>
+
 #include "cpu-defs.h"
 #include "cpu.h"
 #include "dyngen-exec.h"
@@ -581,7 +583,7 @@ static void switch_tss(int tss_selector, uint32_t e1, uint32_t e2, int source, u
     /* load all registers without an exception, then reload them with
        possible exception */
     env->eip = new_eip;
-    WR_se_eip(env, new_eip);
+    WR_se_pc(env, new_eip);
     eflags_mask = TF_MASK | AC_MASK | ID_MASK | IF_MASK | IOPL_MASK | VM_MASK | RF_MASK | NT_MASK;
     if (!(type & 8))
         eflags_mask &= 0xffff;
@@ -1149,7 +1151,7 @@ static void do_interrupt_protected(int intno, int is_int, int error_code, unsign
     cpu_x86_load_seg_cache(env, R_CS, selector, get_seg_base(e1, e2), get_seg_limit(e1, e2), e2);
     cpu_x86_set_cpl(env, dpl);
     env->eip = offset;
-    WR_se_eip(env, offset);
+    WR_se_pc(env, offset);
 
     /* interrupt gate clear IF mask */
     if ((type & 1) == 0) {
@@ -1306,7 +1308,7 @@ static void do_interrupt64(int intno, int is_int, int error_code, target_ulong n
     cpu_x86_load_seg_cache(env, R_CS, selector, get_seg_base(e1, e2), get_seg_limit(e1, e2), e2);
     cpu_x86_set_cpl(env, dpl);
     env->eip = offset;
-    WR_se_eip(env, offset);
+    WR_se_pc(env, offset);
 
     /* interrupt gate clear IF mask */
     if ((type & 1) == 0) {
@@ -1348,10 +1350,10 @@ void helper_syscall(int next_eip_addend) {
         env->mflags &= ~env->fmask;
         if (code64) {
             env->eip = env->lstar;
-            WR_se_eip(env, env->lstar);
+            WR_se_pc(env, env->lstar);
         } else {
             env->eip = env->cstar;
-            WR_se_eip(env, env->cstar);
+            WR_se_pc(env, env->cstar);
         }
     } else {
         ECX_W((uint32_t)(env->eip + next_eip_addend));
@@ -1364,7 +1366,7 @@ void helper_syscall(int next_eip_addend) {
                                DESC_G_MASK | DESC_B_MASK | DESC_P_MASK | DESC_S_MASK | DESC_W_MASK | DESC_A_MASK);
         env->mflags &= ~(IF_MASK | RF_MASK | VM_MASK);
         env->eip = (uint32_t) env->star;
-        WR_se_eip(env, (uint32_t) env->star);
+        WR_se_pc(env, (uint32_t) env->star);
     }
 
 #if defined(CONFIG_SYMBEX) && !defined(STATIC_TRANSLATOR)
@@ -1396,13 +1398,13 @@ void helper_sysret(int dflag) {
             cpu_x86_load_seg_cache(env, R_CS, (selector + 16) | 3, 0, 0xffffffff,
                                    DESC_G_MASK | DESC_P_MASK | DESC_S_MASK | (3 << DESC_DPL_SHIFT) | DESC_CS_MASK |
                                        DESC_R_MASK | DESC_A_MASK | DESC_L_MASK);
-            WR_se_eip(env, ECX);
+            WR_se_pc(env, ECX);
             env->eip = ECX;
         } else {
             cpu_x86_load_seg_cache(env, R_CS, selector | 3, 0, 0xffffffff,
                                    DESC_G_MASK | DESC_B_MASK | DESC_P_MASK | DESC_S_MASK | (3 << DESC_DPL_SHIFT) |
                                        DESC_CS_MASK | DESC_R_MASK | DESC_A_MASK);
-            WR_se_eip(env, (uint32_t) ECX);
+            WR_se_pc(env, (uint32_t) ECX);
             env->eip = (uint32_t) ECX;
         }
         cpu_x86_load_seg_cache(env, R_SS, selector + 8, 0, 0xffffffff, DESC_G_MASK | DESC_B_MASK | DESC_P_MASK |
@@ -1415,7 +1417,7 @@ void helper_sysret(int dflag) {
         cpu_x86_load_seg_cache(env, R_CS, selector | 3, 0, 0xffffffff, DESC_G_MASK | DESC_B_MASK | DESC_P_MASK |
                                                                            DESC_S_MASK | (3 << DESC_DPL_SHIFT) |
                                                                            DESC_CS_MASK | DESC_R_MASK | DESC_A_MASK);
-        WR_se_eip(env, (uint32_t) ECX);
+        WR_se_pc(env, (uint32_t) ECX);
         env->eip = (uint32_t) ECX;
         cpu_x86_load_seg_cache(env, R_SS, selector + 8, 0, 0xffffffff, DESC_G_MASK | DESC_B_MASK | DESC_P_MASK |
                                                                            DESC_S_MASK | (3 << DESC_DPL_SHIFT) |
@@ -1461,7 +1463,7 @@ static void do_interrupt_real(int intno, int is_int, int error_code, unsigned in
 
     /* update processor state */
     ESP_W((ESP & ~0xffff) | (esp & 0xffff));
-    WR_se_eip(env, offset);
+    WR_se_pc(env, offset);
     env->eip = offset;
     env->segs[R_CS].selector = selector;
     env->segs[R_CS].base = (selector << 4);
@@ -1790,7 +1792,7 @@ void do_smm_enter(CPUX86State *env1) {
     cpu_load_efer(env, 0);
 #endif
     load_eflags(0, ~(CC_O | CC_S | CC_Z | CC_A | CC_P | CC_C | DF_MASK));
-    WR_se_eip(env, 0x00008000);
+    WR_se_pc(env, 0x00008000);
     env->eip = 0x00008000;
     cpu_x86_load_seg_cache(env, R_CS, (env->smbase >> 4) & 0xffff, env->smbase, 0xffffffff, 0);
     cpu_x86_load_seg_cache(env, R_DS, 0, 0, 0xffffffff, 0);
@@ -1849,7 +1851,7 @@ void helper_rsm(void) {
         WR_cpu(env, regs[i], ldq_phys(sm_state + 0x7ff8 - i * 8));
 
     env->eip = ldq_phys(sm_state + 0x7f78);
-    WR_se_eip(env, env->eip);
+    WR_se_pc(env, env->eip);
 
     load_eflags(ldl_phys(sm_state + 0x7f70), ~(CC_O | CC_S | CC_Z | CC_A | CC_P | CC_C | DF_MASK));
     env->dr[6] = ldl_phys(sm_state + 0x7f68);
@@ -1868,7 +1870,7 @@ void helper_rsm(void) {
     cpu_x86_update_cr3(env, ldl_phys(sm_state + 0x7ff8));
     load_eflags(ldl_phys(sm_state + 0x7ff4), ~(CC_O | CC_S | CC_Z | CC_A | CC_P | CC_C | DF_MASK));
     env->eip = ldl_phys(sm_state + 0x7ff0);
-    WR_se_eip(env, env->eip);
+    WR_se_pc(env, env->eip);
     EDI_W(ldl_phys(sm_state + 0x7fec));
     ESI_W(ldl_phys(sm_state + 0x7fe8));
     EBP_W(ldl_phys(sm_state + 0x7fe4));
@@ -2492,7 +2494,7 @@ void helper_ljmp_protected(int new_cs, target_ulong new_eip, int next_eip_addend
             raise_exception_err(EXCP0D_GPF, new_cs & 0xfffc);
         cpu_x86_load_seg_cache(env, R_CS, (new_cs & 0xfffc) | cpl, get_seg_base(e1, e2), limit, e2);
         EIP = new_eip;
-        WR_se_eip(env, new_eip);
+        WR_se_pc(env, new_eip);
     } else {
         /* jump to call or task gate */
         dpl = (e2 >> DESC_DPL_SHIFT) & 3;
@@ -2534,7 +2536,7 @@ void helper_ljmp_protected(int new_cs, target_ulong new_eip, int next_eip_addend
                     raise_exception_err(EXCP0D_GPF, 0);
                 cpu_x86_load_seg_cache(env, R_CS, (gate_cs & 0xfffc) | cpl, get_seg_base(e1, e2), limit, e2);
                 EIP = new_eip;
-                WR_se_eip(env, new_eip);
+                WR_se_pc(env, new_eip);
                 break;
             default:
                 raise_exception_err(EXCP0D_GPF, new_cs & 0xfffc);
@@ -2563,7 +2565,7 @@ void helper_lcall_real(int new_cs, target_ulong new_eip1, int shift, int next_ei
 
     SET_ESP(esp, esp_mask);
     env->eip = new_eip;
-    WR_se_eip(env, new_eip);
+    WR_se_pc(env, new_eip);
     env->segs[R_CS].selector = new_cs;
     env->segs[R_CS].base = (new_cs << 4);
 }
@@ -2618,7 +2620,7 @@ void helper_lcall_protected(int new_cs, target_ulong new_eip, int shift, int nex
             ESP_W(rsp);
             cpu_x86_load_seg_cache(env, R_CS, (new_cs & 0xfffc) | cpl, get_seg_base(e1, e2), get_seg_limit(e1, e2), e2);
             EIP = new_eip;
-            WR_se_eip(env, new_eip);
+            WR_se_pc(env, new_eip);
         } else
 #endif
         {
@@ -2640,7 +2642,7 @@ void helper_lcall_protected(int new_cs, target_ulong new_eip, int shift, int nex
             SET_ESP(sp, sp_mask);
             cpu_x86_load_seg_cache(env, R_CS, (new_cs & 0xfffc) | cpl, get_seg_base(e1, e2), limit, e2);
             EIP = new_eip;
-            WR_se_eip(env, new_eip);
+            WR_se_pc(env, new_eip);
         }
     } else {
         /* check gate type */
@@ -2756,7 +2758,7 @@ void helper_lcall_protected(int new_cs, target_ulong new_eip, int shift, int nex
         cpu_x86_set_cpl(env, dpl);
         SET_ESP(sp, sp_mask);
         EIP = offset;
-        WR_se_eip(env, offset);
+        WR_se_pc(env, offset);
 
 #if defined(CONFIG_SYMBEX) && !defined(STATIC_TRANSLATOR)
         if (unlikely(*g_sqi.events.on_privilege_change_signals_count)) {
@@ -2792,7 +2794,7 @@ void helper_iret_real(int shift) {
     env->segs[R_CS].base = (new_cs << 4);
 
     env->eip = new_eip;
-    WR_se_eip(env, new_eip);
+    WR_se_pc(env, new_eip);
     if (env->mflags & VM_MASK)
         eflags_mask = TF_MASK | AC_MASK | ID_MASK | IF_MASK | RF_MASK | NT_MASK;
     else
@@ -2982,7 +2984,7 @@ static inline void helper_ret_protected(int shift, int is_iret, int addend) {
     }
     SET_ESP(sp, sp_mask);
     env->eip = new_eip;
-    WR_se_eip(env, new_eip);
+    WR_se_pc(env, new_eip);
     if (is_iret) {
         /* NOTE: 'cpl' is the _old_ CPL */
         eflags_mask = TF_MASK | AC_MASK | ID_MASK | RF_MASK | NT_MASK;
@@ -3042,7 +3044,7 @@ return_to_vm86:
     load_seg_vm(R_GS, new_gs & 0xffff);
 
     env->eip = new_eip & 0xffff;
-    WR_se_eip(env, new_eip);
+    WR_se_pc(env, new_eip);
     ESP_W(new_esp);
 
 #if defined(CONFIG_SYMBEX) && !defined(STATIC_TRANSLATOR)
@@ -3109,7 +3111,7 @@ void helper_sysenter(void) {
                            DESC_G_MASK | DESC_B_MASK | DESC_P_MASK | DESC_S_MASK | DESC_W_MASK | DESC_A_MASK);
     ESP_W(env->sysenter_esp);
     EIP = env->sysenter_eip;
-    WR_se_eip(env, EIP);
+    WR_se_pc(env, EIP);
 
 #if defined(CONFIG_SYMBEX) && !defined(STATIC_TRANSLATOR)
     if (unlikely(*g_sqi.events.on_privilege_change_signals_count)) {
@@ -3146,7 +3148,7 @@ void helper_sysexit(int dflag) {
     }
     ESP_W(ECX);
     EIP = EDX;
-    WR_se_eip(env, EIP);
+    WR_se_pc(env, EIP);
 
 #if defined(CONFIG_SYMBEX) && !defined(STATIC_TRANSLATOR)
     if (unlikely(*g_sqi.events.on_privilege_change_signals_count)) {
@@ -5155,7 +5157,7 @@ void helper_vmrun(int aflag, int next_eip_addend) {
 
     EIP = ldq_phys(env->vm_vmcb + offsetof(struct vmcb, save.rip));
     env->eip = EIP;
-    WR_se_eip(env, env->eip);
+    WR_se_pc(env, env->eip);
     ESP_W(ldq_phys(env->vm_vmcb + offsetof(struct vmcb, save.rsp)));
     EAX_W(ldq_phys(env->vm_vmcb + offsetof(struct vmcb, save.rax)));
     env->dr[7] = ldq_phys(env->vm_vmcb + offsetof(struct vmcb, save.dr7));
@@ -5499,7 +5501,7 @@ void helper_vmexit(uint32_t exit_code, uint64_t exit_info_1) {
     svm_load_seg_cache(env->vm_hsave + offsetof(struct vmcb, save.ds), env, R_DS);
 
     EIP = ldq_phys(env->vm_hsave + offsetof(struct vmcb, save.rip));
-    WR_se_eip(env, EIP);
+    WR_se_pc(env, EIP);
     ESP_W(ldq_phys(env->vm_hsave + offsetof(struct vmcb, save.rsp)));
     EAX_W(ldq_phys(env->vm_hsave + offsetof(struct vmcb, save.rax)));
 

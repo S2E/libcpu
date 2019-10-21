@@ -21,7 +21,15 @@
 
 #include <cpu/cpu-common.h>
 #include <cpu/exec.h>
+
+#if defined(TARGET_I386)
 #include <cpu/i386/cpu.h>
+#elif defined(TARGET_ARM)
+#include <cpu/arm/cpu.h>
+#else
+#error unsupported target CPU
+#endif
+
 #include "bswap.h"
 #include "qemu-common.h"
 
@@ -370,9 +378,6 @@ void run_on_cpu(CPUArchState *env, void (*func)(void *data), void *data);
 #define CPU_LOG_LLVM_IR (1 << 10)
 #define CPU_LOG_LLVM_ASM (1 << 11)
 
-/* Get a list of mapped pages. */
-void list_mapped_pages(CPUX86State *env, unsigned rw_only, unsigned user_only, target_ulong **pages_addr,
-                       size_t *pages_count);
 
 void cpu_tlb_update_dirty(CPUArchState *env);
 

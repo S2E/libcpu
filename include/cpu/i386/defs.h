@@ -15,9 +15,8 @@
 ///
 /// You should have received a copy of the GNU Library General Public
 /// License along with this library; if not, see <http://www.gnu.org/licenses/>.
-///
-#ifndef __CPU_I386_DEFS__
 
+#ifndef __CPU_I386_DEFS__
 #define __CPU_I386_DEFS__
 
 #ifdef __cplusplus
