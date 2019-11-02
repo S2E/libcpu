@@ -32,6 +32,10 @@
 
 #include "defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void ARMWriteCPFunc(void *opaque, int cp_info, int srcreg, int operand, uint32_t value);
 typedef uint32_t ARMReadCPFunc(void *opaque, int cp_info, int dstreg, int operand);
 
@@ -254,4 +258,8 @@ enum arm_cpu_mode {
 static inline int cpu_mmu_index(CPUARMState *env) {
     return (env->uncached_cpsr & CPSR_M) == ARM_CPU_MODE_USR ? 1 : 0;
 }
+#ifdef __cplusplus
+}
+#endif
+
 #endif
