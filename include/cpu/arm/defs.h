@@ -19,6 +19,9 @@
 #ifndef __CPU_ARM_DEFS__
 #define __CPU_ARM_DEFS__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 // clang-format off
 
 /*******************************************/
@@ -30,5 +33,9 @@
 #define TARGET_PAGE_BITS 10
 
 #define TARGET_HAS_ICE 1
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
