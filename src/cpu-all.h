@@ -174,7 +174,7 @@ static inline int _se_check_concrete(void *objectState, target_ulong offset, int
 static inline void *_se_check_translate_ram_access(const void *p, unsigned size) {
 #if defined(SE_ENABLE_PHYSRAM_TLB)
     extern CPUArchState *env;
-    uintptr_t tlb_index = ((uintptr_t) p >> 12) & (CPU_TLB_SIZE - 1);
+    uintptr_t tlb_index = ((uintptr_t) p >> TARGET_PAGE_BITS) & (CPU_TLB_SIZE - 1);
     CPUTLBRAMEntry *re = &env->se_ram_tlb[tlb_index];
     if (re->host_page == (((uintptr_t) p) & (~(uintptr_t) 0xfff | (size - 1)))) {
         return (void *) ((uintptr_t) p + re->addend);
