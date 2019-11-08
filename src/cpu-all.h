@@ -19,6 +19,8 @@
 #ifndef CPU_ALL_H
 #define CPU_ALL_H
 
+#include "bswap.h"
+#include "qemu-common.h"
 #include <cpu/cpu-common.h>
 #include <cpu/exec.h>
 
@@ -30,8 +32,7 @@
 #error unsupported target CPU
 #endif
 
-#include "bswap.h"
-#include "qemu-common.h"
+
 
 #ifdef CONFIG_SYMBEX
 #include <cpu/se_libcpu.h>
@@ -150,6 +151,7 @@
 #define stq_be_raw(p, v) stq_be_p(saddr((p)), v)
 #define stfl_be_raw(p, v) stfl_be_p(saddr((p)), v)
 #define stfq_be_raw(p, v) stfq_be_p(saddr((p)), v)
+
 
 #else /* CONFIG_SYMBEX */
 
