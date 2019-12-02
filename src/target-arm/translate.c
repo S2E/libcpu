@@ -9618,9 +9618,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                             gen_bx(s, tmp);
                         } else {
                             gen_bx(s, tmp);
-                            if (env->v7m.exception != 0 && IS_M(env) && env->regs[14] > 0xf0000000) {
-                                // printf("interrupt pc=0x%x\n", env->regs[15]);
-                                // printf("interrupt lr=0x%x\n", env->regs[14]);
+                            if (env->v7m.exception != 0 && IS_M(env) && env->regs[14] >= 0xfffffff0) {
                                 gen_exception(EXCP_EXCEPTION_EXIT);
                                 s->is_jmp = DISAS_UPDATE;
                             }
@@ -10005,7 +10003,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                             }
                             val = ldl_phys(env->regs[13] + count * 4);
                             // if pop pc is EXC_RETURN invode interrupt exit.
-                            if (val > 0xffff0000) {
+                            if (val >= 0xfffffff0) {
                                 gen_exception(EXCP_EXCEPTION_EXIT);
                                 s->is_jmp = DISAS_UPDATE;
                             }
