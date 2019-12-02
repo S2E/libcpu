@@ -39,6 +39,14 @@
 #include <cpu/se_libcpu.h>
 #endif
 
+#define DEBUG_TS
+
+#ifdef DEBUG_TS
+#define TPRINTF(...) printf(__VA_ARGS__)
+#else
+#define TPRINTF(...)
+#endif
+
 #define ENABLE_ARCH_4T arm_feature(env, ARM_FEATURE_V4T)
 #define ENABLE_ARCH_5 arm_feature(env, ARM_FEATURE_V5)
 /* currently all emulated v5 cores are also v5TE, so don't bother */
@@ -9995,6 +10003,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                     if ((insn & 0x0900) == 0x0900) {
                         store_reg_from_load(env, s, 15, tmp);
                         // To find how many other regs pop with pc
+                        TPRINTF("pc = 0x%x r0 = 0x%x\n", env->regs[15],env->regs[0]);
                         if (env->v7m.exception != 0 && IS_M(env)) {
                             count = 0;
                             for (k = 0; k < 8; k++) {

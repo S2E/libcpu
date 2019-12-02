@@ -47,6 +47,14 @@
 #include "exec-tb.h"
 #include "exec.h"
 
+#define DEBUG_TS
+
+#ifdef DEBUG_TS
+#define TPRINTF(...) fprintf(logfile, __VA_ARGS__)
+#else
+#define TPRINTF(...)
+#endif
+
 /* code generation context */
 __thread TCGContext *tcg_ctx;
 
