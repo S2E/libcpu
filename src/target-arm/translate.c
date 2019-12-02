@@ -101,7 +101,11 @@ typedef struct DisasContext {
     int invalid_instr;       /* tb contains invalid instruction */
 #endif
 } DisasContext;
-
+#ifdef CONFIG_SYMBEX
+#define SET_TB_TYPE(t) s->tb->se_tb_type = t;
+#else
+#define SET_TB_TYPE(t)
+#endif
 static uint32_t gen_opc_condexec_bits[OPC_BUF_SIZE];
 
 #if defined(CONFIG_USER_ONLY)
@@ -135,7 +139,85 @@ static TCGv_i64 cpu_F0d, cpu_F1d;
 
 static const char *regnames[] = {"r0", "r1", "r2",  "r3",  "r4",  "r5",  "r6",  "r7",
                                  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "pc"};
+#ifdef CONFIG_SYMBEX
+static inline void instr_translate_compute_reg_mask_end(DisasContext *dc) {
+    uint64_t rmask, wmask, accesses_mem;
 
+    if (dc->done_reg_access_end) {
+        return;
+    }
+
+    tcg_calc_regmask_ex(&tcg_ctx, &rmask, &wmask, &accesses_mem, dc->ins_opc, dc->ins_arg);
+
+    // First five bits contain flag registers
+    rmask >>= 5;
+    wmask >>= 5;
+
+    g_sqi.events.on_translate_register_access(dc->tb, dc->insPc, rmask, wmask, (int) accesses_mem);
+
+    dc->done_reg_access_end = 1;
+}
+#endif
+
+#ifdef CONFIG_SYMBEX
+void *g_invokeCallRetInstrumentation __attribute__((weak));
+
+static inline void instr_gen_call_ret(DisasContext *s, int isCall) {
+    if (likely(!*g_sqi.events.on_call_return_signals_count)) {
+        return;
+    }
+
+    int instrument = g_sqi.events.on_call_return_translate(s->pc, isCall);
+    if (!instrument) {
+        return;
+    }
+    TPRINTF("NOT Implenmented %d", instrument);
+
+/*    int clabel = gen_new_label();
+
+    tcg_gen_movi_i32(cpu_tmp1_i32, (uintptr_t) &g_invokeCallRetInstrumentation);
+
+    tcg_gen_ld_i32(cpu_tmp1_i32, TCGV_NAT_TO_PTR(cpu_tmp1_i32), 0);
+    tcg_gen_brcondi_i32(TCG_COND_EQ, cpu_tmp1_i32, 0, clabel);
+
+    tcg_gen_movi_tl(cpu_T[1], s->insPc);
+
+    if (isCall) {
+        gen_helper_se_call(cpu_T[1]);
+    } else {
+        gen_helper_se_ret(cpu_T[1]);
+    }
+
+    gen_set_label(clabel);
+*/
+}
+
+static inline void gen_instr_end(DisasContext *s) {
+    if (unlikely(*g_sqi.events.on_translate_instruction_end_signals_count && s->instrument))
+        g_sqi.events.on_translate_instruction_end(s, s->tb, s->insPc, s->useNextPc ? s->nextPc : (uint64_t) -1);
+}
+
+static inline void gen_eob_event(DisasContext *s, int static_target, target_ulong target_pc) {
+    gen_instr_end(s);
+
+    if (unlikely(*g_sqi.events.on_translate_register_access_signals_count && s->instrument))
+        instr_translate_compute_reg_mask_end(s);
+
+    if (unlikely(*g_sqi.events.on_translate_block_end_signals_count && s->instrument))
+        g_sqi.events.on_translate_block_end(s->tb, s->insPc, static_target, target_pc);
+
+    if (unlikely(*g_sqi.events.on_call_return_signals_count && s->instrument)) {
+        if (s->tb->se_tb_type == TB_CALL || s->tb->se_tb_type == TB_CALL_IND) {
+            instr_gen_call_ret(s, 1);
+        } else if (s->tb->se_tb_type == TB_RET) {
+            instr_gen_call_ret(s, 0);
+        }
+    }
+
+    s->done_instr_end = 1;
+}
+
+#endif
 /* initialize TCG globals.  */
 void arm_translate_init(void) {
     int i;
@@ -3659,6 +3741,9 @@ static inline void gen_goto_tb(DisasContext *s, int n, uint32_t dest) {
     TranslationBlock *tb;
 
     tb = s->tb;
+#ifdef CONFIG_SYMBEX
+    gen_eob_event(s, 1, dest);
+#endif
     if ((tb->pc & TARGET_PAGE_MASK) == (dest & TARGET_PAGE_MASK)) {
         tcg_gen_goto_tb(n);
         gen_set_pc_im(dest);
@@ -10268,6 +10353,48 @@ static inline void gen_intermediate_code_internal(CPUARMState *env, TranslationB
 
     tcg_clear_temp_count();
 
+#ifdef CONFIG_SYMBEX
+    tb_precise_pc_t *p;
+
+    /* When doing retranslation to LLVM, avoid clobbering
+     * existing pc recovery info, which is relied upon by
+     * the existing machine code. */
+    int generate_pc_recovery_info = tb->precise_entries == 0;
+
+    dc->invalid_instr = 0;
+
+    if (!search_pc && generate_pc_recovery_info) {
+        p = tb->precise_pcs;
+    }
+
+    if (search_pc) {
+        generate_pc_recovery_info = 0;
+    }
+
+    dc->instrument = !search_pc;
+
+    dc->enable_jmp_im = 1;
+    dc->cpuState = env;
+    tb->se_tb_type = TB_DEFAULT;
+    tb->se_tb_call_eip = 0;
+/* Make sure to refer to the original TB instead of the
+   temporary one in case we regenerate LLVM bitcode */
+#ifndef STATIC_TRANSLATOR
+    TCGv_i64 tmp64;
+    tmp64 = tcg_temp_new_i64();   
+    if (tb->originalTb) {
+        tcg_gen_movi_i64(tmp64, (uint64_t) tb->originalTb);
+    } else {
+        tcg_gen_movi_i64(tmp64, (uint64_t) tb);
+    }
+
+    tcg_gen_st_i64(tmp64, cpu_env, offsetof(CPUArchState, se_current_tb));
+
+    if (unlikely(*g_sqi.events.on_translate_block_start_signals_count && dc->instrument)) {
+        g_sqi.events.on_translate_block_start(dc, tb, pc_start);
+    }
+#endif
+#endif
     /* A note on handling of the condexec (IT) bits:
      *
      * We want to avoid the overhead of having to write the updated condexec
@@ -10339,6 +10466,23 @@ static inline void gen_intermediate_code_internal(CPUARMState *env, TranslationB
                 }
             }
         }
+#ifdef CONFIG_SYMBEX
+        /* Generate precise PC recovery information */
+        if (generate_pc_recovery_info && !search_pc) {
+            int cur_opc = gen_opc_ptr - gen_opc_buf;
+
+            if (num_insns > 0 && (p - 1)->opc == cur_opc) {
+                // The instruction was a nop
+                --p;
+                --tb->precise_entries;
+            }
+
+            p->guest_pc_increment = dc->pc - pc_start;
+            p->opc = cur_opc;
+            ++p;
+            ++tb->precise_entries;
+        }
+#endif
         if (search_pc) {
             j = gen_opc_ptr - gen_opc_buf;
             if (lj < j) {
@@ -10358,7 +10502,22 @@ static inline void gen_intermediate_code_internal(CPUARMState *env, TranslationB
         //        if (unlikely(qemu_loglevel_mask(CPU_LOG_TB_OP))) {
         //            tcg_gen_debug_insn_start(dc->pc);
         //        }
+#ifdef CONFIG_SYMBEX
+        dc->insPc = dc->pc;
+        dc->done_instr_end = 0;
+        dc->done_reg_access_end = 0;
 
+        if (unlikely(*g_sqi.events.on_translate_instruction_start_signals_count && dc->instrument)) {
+            g_sqi.events.on_translate_instruction_start(dc, tb, dc->pc);
+        }
+
+        tb->pcOfLastInstr = pc_start;
+        dc->useNextPc = 0;
+        dc->nextPc = -1;
+
+        dc->ins_opc = gen_opc_ptr;
+        dc->ins_arg = gen_opparam_ptr;
+#endif
         if (dc->thumb) {
             disas_thumb_insn(env, dc);
             if (dc->condexec_mask) {
@@ -10371,7 +10530,16 @@ static inline void gen_intermediate_code_internal(CPUARMState *env, TranslationB
         } else {
             disas_arm_insn(env, dc);
         }
+#ifdef CONFIG_SYMBEX
+        if (!dc->is_jmp) {
+            // Allow proper pc update for onTranslateInstruction events
+            dc->nextPc = dc->pc;
+            dc->useNextPc = 1;
 
+            // Jumps are treated specially, as they end the TB
+            gen_instr_end(dc);
+        }
+#endif
         if (dc->condjmp && !dc->is_jmp) {
             gen_set_label(dc->condlabel);
             dc->condjmp = 0;
@@ -10441,6 +10609,9 @@ static inline void gen_intermediate_code_internal(CPUARMState *env, TranslationB
             default:
             case DISAS_JUMP:
             case DISAS_UPDATE:
+#ifdef CONFIG_SYMBEX
+                gen_eob_event(dc, 0, 0);
+#endif
                 /* indicate that the hash table must be used to find the next TB */
                 tcg_gen_exit_tb(0);
                 break;
@@ -10483,6 +10654,11 @@ done_generating:
     } else {
         tb->size = dc->pc - pc_start;
         tb->icount = num_insns;
+#ifdef CONFIG_SYMBEX
+        if (unlikely(*g_sqi.events.on_translate_block_complete_signals_count && dc->instrument)) {
+            g_sqi.events.on_translate_block_complete(tb, dc->insPc);
+        }
+#endif   
     }
 }
 
