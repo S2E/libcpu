@@ -10010,7 +10010,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                                 if ((insn & (1 << k)) != 0)
                                     count++;
                             }
-                            val = ldl_phys(env->regs[13] + count * 4);
+                            val = ldl_phys(RR_cpu(env,regs[13]) + count * 4);
                             // if pop pc is EXC_RETURN invode interrupt exit.
                             if (val >= 0xfffffff0) {
                                 gen_exception(EXCP_EXCEPTION_EXIT);
@@ -10514,8 +10514,8 @@ void cpu_dump_state(CPUARMState *env, FILE *f, fprintf_function cpu_fprintf, int
 #endif
     uint32_t psr;
 
-    for (i = 0; i < 16; i++) {
-        cpu_fprintf(f, "R%02d=%08x", i, env->regs[i]);
+    for (i = 0; i < 15; i++) {
+        cpu_fprintf(f, "R%02d=%08x", i, RR_cpu(env,regs[i]));
         if ((i % 4) == 3)
             cpu_fprintf(f, "\n");
         else
