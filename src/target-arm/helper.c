@@ -865,9 +865,9 @@ void do_interrupt_v7m(CPUARMState *env) {
 /* This will be called from S2EExecutor if running concretely; It will
    in turn call the real ARM IRQ handler with current CPUARMState.*/
 void do_interrupt(CPUARMState *env) {
-    g_sqi.exec.do_interrupt_arm(env);
+    g_sqi.exec.do_interrupt_arm();
 }
-void se_do_interrupt_arm(CPUARMState *env) {
+void se_helper_do_interrupt_arm(CPUARMState *env) {
 #else
 /* Handle a CPU exception.  */
 void do_interrupt(CPUARMState *env) {

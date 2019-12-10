@@ -88,6 +88,16 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def, uint32_t rn, uint32_t max
 
 #endif
 
+#ifdef CONFIG_SYMBEX
+#include <cpu/se_libcpu.h>
+
+/* This will be called from S2EExecutor if running concretely; It will
+   in turn call the real ARM IRQ handler with current CPUARMState.*/
+void se_do_interrupt_arm(void)
+{
+    se_helper_do_interrupt_arm(env);
+}
+#endif
 /* try to fill the TLB and return an exception if error. If retaddr is
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
