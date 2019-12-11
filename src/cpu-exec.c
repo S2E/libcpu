@@ -450,12 +450,12 @@ static bool process_interrupt_request(CPUArchState *env) {
     // in case basepri has not been synced  so add exit code condition
     if ((interrupt_request & CPU_INTERRUPT_HARD) &&
         ((IS_M(env) && env->regs[15] < 0xfffffff0) || !(env->uncached_cpsr & CPSR_I))) {
-        if ((armv7m_nvic_can_take_pending_exception(env->nvic)) && (env->kvm_exit_code == 0)) {
+        if ((armv7m_nvic_can_take_pending_exception(env->nvic))) {
             env->exception_index = EXCP_IRQ;
             do_interrupt(env);
             has_interrupt = true;
         } else {
-            DPRINTF("cpu basepri = %d take_exc = %d kvm_exit_code = %d\n", env->v7m.basepri, armv7m_nvic_can_take_pending_exception(env->nvic), env->kvm_exit_code);
+            DPRINTF("cpu basepri = %d take_exc = %d\n", env->v7m.basepri, armv7m_nvic_can_take_pending_exception(env->nvic));
         }
     }
 #endif

@@ -193,6 +193,12 @@ static inline uint32_t xpsr_read(CPUARMState *env) {
 
 /* Set the xPSR.  Note that some bits of mask must be all-set or all-clear.  */
 static inline void xpsr_write(CPUARMState *env, uint32_t val, uint32_t mask) {
+//sync var exception for kvm env by using hard-code offset
+    unsigned long *armcpu;
+    uint32_t *exception;
+    armcpu = env->nvic+0x308;
+    exception = (unsigned long)(*armcpu+0x8b50);
+
     if (mask & CPSR_NZCV) {
         WR_cpu(env, ZF, (~val) & CPSR_Z);
         WR_cpu(env, NF, val);
@@ -213,6 +219,7 @@ static inline void xpsr_write(CPUARMState *env, uint32_t val, uint32_t mask) {
     }
     if (mask & 0x1ff) {
         env->v7m.exception = val & 0x1ff;
+        *exception = val & 0x1ff;
     }
 }
 

@@ -770,6 +770,11 @@ void do_interrupt_v7m(CPUARMState *env) {
 
     int exc;
     bool targets_secure;
+//sync var exception for kvm env by using hard-code offset
+    unsigned long *armcpu;
+    uint32_t *exception;
+    armcpu = env->nvic+0x308;
+    exception = (unsigned long)(*armcpu+0x8b50);
 
     lr = 0xfffffff1;
     if (env->v7m.current_sp)
@@ -807,6 +812,7 @@ void do_interrupt_v7m(CPUARMState *env) {
             armv7m_nvic_get_pending_irq_info(env->nvic, &exc, &targets_secure);
             armv7m_nvic_acknowledge_irq(env->nvic);
             env->v7m.exception = exc;
+            *exception = exc;
             break;
         case EXCP_EXCEPTION_EXIT:
             do_v7m_exception_exit(env);
@@ -2261,6 +2267,14 @@ uint32_t HELPER(v7m_mrs)(CPUARMState *env, uint32_t reg) {
 }
 
 void HELPER(v7m_msr)(CPUARMState *env, uint32_t reg, uint32_t val) {
+    unsigned long *armcpu;
+    uint32_t *basepri;
+    uint32_t *primask;
+
+    armcpu = env->nvic+0x308;
+    basepri = (unsigned long)(*armcpu+0x8b0c);
+    primask = (unsigned long)(*armcpu+0x8b54);
+
     switch (reg) {
         case 0: /* APSR */
             xpsr_write(env, val, 0xf8000000);
@@ -2296,6 +2310,7 @@ void HELPER(v7m_msr)(CPUARMState *env, uint32_t reg, uint32_t val) {
                 env->v7m.other_sp = val;
             break;
         case 16: /* PRIMASK */
+            *primask = val & 1;
             if (val & 1)
                 env->uncached_cpsr |= CPSR_I;
             else
@@ -2303,15 +2318,13 @@ void HELPER(v7m_msr)(CPUARMState *env, uint32_t reg, uint32_t val) {
             break;
         case 17: /* BASEPRI */
             env->v7m.basepri = val & 0xff;
-            env->kvm_exit_code = 1;
-            cpu_exit(env);
+            *basepri = val & 0xff; /*sync with kvm env basepri */
             break;
         case 18: /* BASEPRI_MAX */
             val &= 0xff;
             if (val != 0 && (val < env->v7m.basepri || env->v7m.basepri == 0)) {
                 env->v7m.basepri = val;
-                env->kvm_exit_code = 1;
-                cpu_exit(env);
+                *basepri = val; /*sync with kvm env basepri */
             }
             break;
         case 19: /* FAULTMASK */
