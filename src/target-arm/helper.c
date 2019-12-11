@@ -795,6 +795,7 @@ void do_interrupt_v7m(CPUARMState *env) {
         case EXCP_PREFETCH_ABORT:
         case EXCP_DATA_ABORT:
             armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_MEM, false);
+            cpu_abort(env, "hard fault exception 0x%x\n", env->exception_index);
             break;
         case EXCP_BKPT:
             if (semihosting_enabled) {
