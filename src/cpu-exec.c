@@ -266,7 +266,7 @@ static uintptr_t fetch_and_run_tb(TranslationBlock *prev_tb, int tb_exit_code, C
             (uint64_t) env->eip, (uint64_t) env->eip + tb->size, (uint64_t) env->mflags,
             env->kvm_request_interrupt_window);
 #elif defined(TARGET_ARM)
-    DPRINTF("   fetch_and_run_tb r15=0x%x sp=0x%x cpsr=0x%x \n", (uint32_t) env->regs[15], env->regs[13], env->uncached_cpsr);
+    DPRINTF("   fetch_and_run_tb pc=0x%x sp=0x%x cpsr=0x%x \n", (uint32_t) env->regs[15], env->regs[13], env->uncached_cpsr);
 #else
 #error Unsupported target architecture
 #endif

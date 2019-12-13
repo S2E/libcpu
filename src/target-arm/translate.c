@@ -10088,7 +10088,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                     if ((insn & 0x0900) == 0x0900) {
                         store_reg_from_load(env, s, 15, tmp);
                         // To find how many other regs pop with pc
-                        TPRINTF("pc = 0x%x r0 = 0x%x\n", env->regs[15],env->regs[0]);
+                        TPRINTF("pc = 0x%x addr = 0x%x tmp = 0x%x\n", env->regs[15], addr, tmp);
                         if (env->v7m.exception != 0 && IS_M(env)) {
                             count = 0;
                             for (k = 0; k < 8; k++) {
