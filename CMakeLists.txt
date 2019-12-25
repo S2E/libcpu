@@ -85,7 +85,7 @@ elseif(WITH_TARGET MATCHES "arm")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_ARCH \"arm\"\n")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_ARM 1\n")
     file(APPEND ${CONFIG_TARGET_H} "#define TARGET_LONG_ALIGNMENT 4\n")
-    file(APPEND ${CONFIG_TARGET_H} "#define TARGET_INSN_START_EXTRA_WORDS 1\n")
+    file(APPEND ${CONFIG_TARGET_H} "#define TARGET_INSN_START_EXTRA_WORDS 2\n")
 
     set(TARGET_DIR "target-arm")
 else()
