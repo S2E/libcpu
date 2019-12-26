@@ -32,14 +32,19 @@ extern "C" {
 /** This defines the size of each MemoryObject that represents physical RAM.
     Larger values save some memory, smaller (exponentially) decrease solving
     time for constraints with symbolic addresses */
-//#ifdef SE_ENABLE_TLB
+#ifdef SE_ENABLE_TLB
 // XXX: Use TARGET_PAGE_BITS somehow...
-//#define SE_RAM_OBJECT_BITS 12
-//#else
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
+#define SE_RAM_OBJECT_BITS 12
+#elif defined(TARGET_ARM)
+#define SE_RAM_OBJECT_BITS 10
+#else
+#error Unsupported target architecture
+#endif
+#else
 /* Do not touch this */
-
 #define SE_RAM_OBJECT_BITS TARGET_PAGE_BITS
-//#endif
+#endif
 
 /** Force page sizes to be the native size. A symbex engine could perform dynamic page splitting
     in case of symbolic addresses, so there is no need to tweak this value anymore. */
