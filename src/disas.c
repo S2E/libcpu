@@ -18,7 +18,7 @@
 #include <string.h>
 
 #include <cpu/config.h>
-#if defined(TARGET_I386)
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
 #include <cpu/i386/cpu.h>
 #elif defined(TARGET_ARM)
 #include <cpu/arm/cpu.h>

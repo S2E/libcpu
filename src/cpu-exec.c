@@ -562,7 +562,7 @@ static bool execution_loop(CPUArchState *env) {
         }
 
         if (env->kvm_request_interrupt_window &&
-#if defined(TARGET_I386)
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
             (env->mflags & IF_MASK)) {
 #elif defined(TARGET_ARM)
             !(env->uncached_cpsr & CPSR_I)) {
@@ -612,7 +612,7 @@ int cpu_exec(CPUArchState *env) {
              * This usually happens when TB cache is flushed but current tb is not reset.
              */
             env->current_tb = NULL;
-#if defined(TARGET_I386)
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
             DPRINTF("  setjmp entered eip=%#lx\n", (uint64_t) env->eip);
 #elif defined(TARGET_ARM)
             DPRINTF("  setjmp entered r15=%#x\n", (uint32_t) env->regs[15]);
@@ -659,7 +659,7 @@ int cpu_exec(CPUArchState *env) {
             env = cpu_single_env;
         }
     } /* for(;;) */
-#if defined(TARGET_I386)
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
     DPRINTF("cpu_loop exit ret=%#x eip=%#lx\n", ret, (uint64_t) env->eip);
 #elif defined(TARGET_ARM)
     DPRINTF("cpu_loop exit ret=%#x r15=%#x\n", ret, (uint32_t) env->regs[15]);
@@ -669,7 +669,7 @@ int cpu_exec(CPUArchState *env) {
 
     env->current_tb = NULL;
 
-#if defined(TARGET_I386)
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
 #ifdef CONFIG_SYMBEX
     g_sqi.regs.set_cc_op_eflags(env);
 #else
