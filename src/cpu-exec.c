@@ -504,7 +504,7 @@ static bool execution_loop(CPUArchState *env) {
              * ensure that no TB jump will be modified as
              * the program flow was changed
              */
-            last_tb = 0;
+            ltb = NULL;
             has_interrupt = true;
         }
 
