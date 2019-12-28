@@ -22,9 +22,8 @@
 
 #include <cpu/memdbg.h>
 
-#include "helper.h"
-
-#include "host-utils.h"
+#include <tcg/tcg-op.h>
+#include <tcg/utils/host-utils.h>
 
 #define DEBUG_HELPER
 

@@ -29,10 +29,6 @@
 #include <tcg/tcg-op.h>
 // clang-format on
 
-#include "helper.h"
-#define GEN_HELPER 1
-#include "helper.h"
-
 #include <cpu/disas.h>
 
 #ifdef CONFIG_SYMBEX

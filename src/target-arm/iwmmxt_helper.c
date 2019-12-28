@@ -24,8 +24,7 @@
 
 #include "cpu.h"
 #include "exec-all.h"
-#include "helper.h"
-
+#include <tcg/tcg-op.h>
 /* iwMMXt macros extracted from GNU gdb.  */
 
 /* Set the SIMD wCASF flags for 8, 16, 32 or 64-bit operations.  */

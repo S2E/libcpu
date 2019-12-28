@@ -11,7 +11,7 @@
 
 #include "cpu.h"
 #include "exec-all.h"
-#include "helper.h"
+#include <tcg/tcg-op.h>
 
 #define SIGNBIT (uint32_t) 0x80000000
 #define SIGNBIT64 ((uint64_t) 1 << 63)
