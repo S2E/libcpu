@@ -24,6 +24,7 @@
 #define SIGNBIT (uint32_t) 0x80000000
 #define SIGNBIT64 ((uint64_t) 1 << 63)
 
+// SYMBEX: Keep the environment in a variable
 struct CPUARMState *env = 0;
 
 static void raise_exception(int tt) {
@@ -103,9 +104,7 @@ void se_do_interrupt_arm(void)
    from generated code or from helper.c) */
 /* XXX: fix it to restore all registers */
 void tlb_fill(CPUArchState *env1, target_ulong addr, target_ulong page_addr, int is_write, int mmu_idx, void *retaddr) {
-    TranslationBlock *tb;
     CPUArchState *saved_env;
-    unsigned long pc;
     int ret;
 
     saved_env = env;
@@ -132,17 +131,6 @@ void tlb_fill(CPUArchState *env1, target_ulong addr, target_ulong page_addr, int
             assert(1 && "handle coprocessor exception properly");
         }
 #endif
-
-        if (retaddr) {
-            /* now we have a real cpu fault */
-            pc = (uintptr_t) retaddr;
-            tb = tb_find_pc(pc);
-            if (tb) {
-                /* the PC is inside the translated code. It means that we have
-                   a virtual CPU fault */
-                cpu_restore_state(tb, env, pc);
-            }
-        };
 
 #ifdef CONFIG_SYMBEX
         if (unlikely(*g_sqi.events.on_page_fault_signals_count)) {
@@ -286,16 +274,16 @@ void HELPER(exception)(uint32_t excp) {
     cpu_loop_exit(env);
 }
 
-uint32_t HELPER(cpsr_read)(void) {
+uint32_t HELPER(cpsr_read)(CPUARMState *env) {
     return cpsr_read(env) & ~CPSR_EXEC;
 }
 
-void HELPER(cpsr_write)(uint32_t val, uint32_t mask) {
+void HELPER(cpsr_write)(CPUARMState *env, uint32_t val, uint32_t mask) {
     cpsr_write(env, val, mask);
 }
 
 /* Access to user mode registers from privileged modes.  */
-uint32_t HELPER(get_user_reg)(uint32_t regno) {
+uint32_t HELPER(get_user_reg)(CPUARMState *env, uint32_t regno) {
     uint32_t val;
 
     if (regno == 13) {
@@ -312,7 +300,7 @@ uint32_t HELPER(get_user_reg)(uint32_t regno) {
     return val;
 }
 
-void HELPER(set_user_reg)(uint32_t regno, uint32_t val) {
+void HELPER(set_user_reg)(CPUARMState *env, uint32_t regno, uint32_t val) {
     if (regno == 13) {
         WR_cpu(env, banked_r13[0], val);
     } else if (regno == 14) {
@@ -330,7 +318,7 @@ void HELPER(set_user_reg)(uint32_t regno, uint32_t val) {
    The only way to do that in TCG is a conditional branch, which clobbers
    all our temporaries.  For now implement these as helper functions.  */
 
-uint32_t HELPER(add_cc)(uint32_t a, uint32_t b) {
+uint32_t HELPER(add_cc)(CPUARMState *env, uint32_t a, uint32_t b) {
     uint32_t result;
     result = a + b;
     WR_cpu(env, NF, result);
@@ -340,7 +328,7 @@ uint32_t HELPER(add_cc)(uint32_t a, uint32_t b) {
     return result;
 }
 
-uint32_t HELPER(adc_cc)(uint32_t a, uint32_t b) {
+uint32_t HELPER(adc_cc)(CPUARMState *env, uint32_t a, uint32_t b) {
     uint32_t result;
     if (!(RR_cpu(env, CF))) {
         result = a + b;
@@ -355,7 +343,7 @@ uint32_t HELPER(adc_cc)(uint32_t a, uint32_t b) {
     return result;
 }
 
-uint32_t HELPER(sub_cc)(uint32_t a, uint32_t b) {
+uint32_t HELPER(sub_cc)(CPUARMState *env, uint32_t a, uint32_t b) {
     uint32_t result;
     result = a - b;
     WR_cpu(env, NF, result);
@@ -365,7 +353,7 @@ uint32_t HELPER(sub_cc)(uint32_t a, uint32_t b) {
     return result;
 }
 
-uint32_t HELPER(sbc_cc)(uint32_t a, uint32_t b) {
+uint32_t HELPER(sbc_cc)(CPUARMState *env, uint32_t a, uint32_t b) {
     uint32_t result;
     if (!(RR_cpu(env, CF))) {
         result = a - b - 1;
@@ -403,7 +391,7 @@ uint32_t HELPER(sar)(uint32_t x, uint32_t i) {
     return (int32_t) x >> shift;
 }
 
-uint32_t HELPER(shl_cc)(uint32_t x, uint32_t i) {
+uint32_t HELPER(shl_cc)(CPUARMState *env, uint32_t x, uint32_t i) {
     int shift = i & 0xff;
     if (shift >= 32) {
         if (shift == 32)
@@ -418,7 +406,7 @@ uint32_t HELPER(shl_cc)(uint32_t x, uint32_t i) {
     return x;
 }
 
-uint32_t HELPER(shr_cc)(uint32_t x, uint32_t i) {
+uint32_t HELPER(shr_cc)(CPUARMState *env, uint32_t x, uint32_t i) {
     int shift = i & 0xff;
     if (shift >= 32) {
         if (shift == 32)
@@ -433,7 +421,7 @@ uint32_t HELPER(shr_cc)(uint32_t x, uint32_t i) {
     return x;
 }
 
-uint32_t HELPER(sar_cc)(uint32_t x, uint32_t i) {
+uint32_t HELPER(sar_cc)(CPUARMState *env, uint32_t x, uint32_t i) {
     int shift = i & 0xff;
     if (shift >= 32) {
         WR_cpu(env, CF, ((x >> 31) & 1));
@@ -445,7 +433,7 @@ uint32_t HELPER(sar_cc)(uint32_t x, uint32_t i) {
     return x;
 }
 
-uint32_t HELPER(ror_cc)(uint32_t x, uint32_t i) {
+uint32_t HELPER(ror_cc)(CPUARMState *env, uint32_t x, uint32_t i) {
     int shift1, shift;
     shift1 = i & 0xff;
     shift = shift1 & 0x1f;
