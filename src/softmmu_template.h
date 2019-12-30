@@ -425,17 +425,20 @@ void glue(glue(io_write, SUFFIX), MMUSUFFIX)(CPUArchState *env, target_phys_addr
 
     SE_SET_MEM_IO_VADDR(env, addr, 0);
     env->mem_io_pc = (uintptr_t) retaddr;
+
+    if (likely(!g_sqi.mem.is_mmio_symbolic(addr, DATA_SIZE))) {
 #if SHIFT <= 2
-    ops->write(physaddr, val, 1 << SHIFT);
+        ops->write(physaddr, val, 1 << SHIFT);
 #else
 #ifdef TARGET_WORDS_BIGENDIAN
-    ops->write(physaddr, (val >> 32), 4);
-    ops->write(physaddr + 4, (uint32_t) val, 4);
+        ops->write(physaddr, (val >> 32), 4);
+        ops->write(physaddr + 4, (uint32_t) val, 4);
 #else
-    ops->write(physaddr, (uint32_t) val, 4);
-    ops->write(physaddr + 4, val >> 32, 4);
+        ops->write(physaddr, (uint32_t) val, 4);
+        ops->write(physaddr + 4, val >> 32, 4);
 #endif
 #endif /* SHIFT > 2 */
+    }
 }
 
 void glue(glue(io_write_chk, SUFFIX), MMUSUFFIX)(CPUArchState *env, target_phys_addr_t physaddr, DATA_TYPE val,
