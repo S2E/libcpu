@@ -728,98 +728,89 @@ static void gen_thumb2_parallel_addsub(int op1, int op2, TCGv a, TCGv b) {
 static void gen_test_cc(int cc, TCGLabel *label) {
     TCGv tmp;
     TCGv tmp2;
-    TCGLabel *inv;
+
+    TCGv_i32 value;
+    TCGCond cond;
 
     switch (cc) {
         case 0: /* eq: Z */
-            tmp = load_cpu_field(ZF);
-            tcg_gen_brcondi_i32(TCG_COND_EQ, tmp, 0, label);
-            break;
         case 1: /* ne: !Z */
-            tmp = load_cpu_field(ZF);
-            tcg_gen_brcondi_i32(TCG_COND_NE, tmp, 0, label);
+            cond = TCG_COND_EQ;
+            value = load_cpu_field(ZF);
             break;
         case 2: /* cs: C */
-            tmp = load_cpu_field(CF);
-            tcg_gen_brcondi_i32(TCG_COND_NE, tmp, 0, label);
-            break;
         case 3: /* cc: !C */
-            tmp = load_cpu_field(CF);
-            tcg_gen_brcondi_i32(TCG_COND_EQ, tmp, 0, label);
+            cond = TCG_COND_NE;
+            value = load_cpu_field(CF);
             break;
         case 4: /* mi: N */
-            tmp = load_cpu_field(NF);
-            tcg_gen_brcondi_i32(TCG_COND_LT, tmp, 0, label);
-            break;
         case 5: /* pl: !N */
-            tmp = load_cpu_field(NF);
-            tcg_gen_brcondi_i32(TCG_COND_GE, tmp, 0, label);
+            cond = TCG_COND_LT;
+            value = load_cpu_field(NF);
             break;
         case 6: /* vs: V */
-            tmp = load_cpu_field(VF);
-            tcg_gen_brcondi_i32(TCG_COND_LT, tmp, 0, label);
-            break;
         case 7: /* vc: !V */
-            tmp = load_cpu_field(VF);
-            tcg_gen_brcondi_i32(TCG_COND_GE, tmp, 0, label);
+            cond = TCG_COND_LT;
+            value = load_cpu_field(VF);
             break;
         case 8: /* hi: C && !Z */
-            inv = gen_new_label();
-            tmp = load_cpu_field(CF);
-            tcg_gen_brcondi_i32(TCG_COND_EQ, tmp, 0, inv);
-            tcg_temp_free_i32(tmp);
-            tmp = load_cpu_field(ZF);
-            tcg_gen_brcondi_i32(TCG_COND_NE, tmp, 0, label);
-            gen_set_label(inv);
-            break;
         case 9: /* ls: !C || Z */
+            cond = TCG_COND_NE;
+            value = tcg_temp_new_i32();
             tmp = load_cpu_field(CF);
-            tcg_gen_brcondi_i32(TCG_COND_EQ, tmp, 0, label);
+            tmp2 = load_cpu_field(ZF);
+             /* CF is 1 for C, so -CF is an all-bits-set mask for C;
+                ZF is non-zero for !Z; so AND the two subexpressions.  */
+            tcg_gen_neg_i32(value, tmp);
+            tcg_gen_and_i32(value, value, tmp2);
             tcg_temp_free_i32(tmp);
-            tmp = load_cpu_field(ZF);
-            tcg_gen_brcondi_i32(TCG_COND_EQ, tmp, 0, label);
+            tcg_temp_free_i32(tmp2);
             break;
         case 10: /* ge: N == V -> N ^ V == 0 */
-            tmp = load_cpu_field(VF);
-            tmp2 = load_cpu_field(NF);
-            tcg_gen_xor_i32(tmp, tmp, tmp2);
-            tcg_temp_free_i32(tmp2);
-            tcg_gen_brcondi_i32(TCG_COND_GE, tmp, 0, label);
-            break;
         case 11: /* lt: N != V -> N ^ V != 0 */
+            cond = TCG_COND_GE;
+            value = tcg_temp_new_i32();
             tmp = load_cpu_field(VF);
             tmp2 = load_cpu_field(NF);
-            tcg_gen_xor_i32(tmp, tmp, tmp2);
+            tcg_gen_xor_i32(value, tmp, tmp2);
+            tcg_temp_free_i32(tmp);
             tcg_temp_free_i32(tmp2);
-            tcg_gen_brcondi_i32(TCG_COND_LT, tmp, 0, label);
             break;
         case 12: /* gt: !Z && N == V */
-            inv = gen_new_label();
-            tmp = load_cpu_field(ZF);
-            tcg_gen_brcondi_i32(TCG_COND_EQ, tmp, 0, inv);
-            tcg_temp_free_i32(tmp);
-            tmp = load_cpu_field(VF);
-            tmp2 = load_cpu_field(NF);
-            tcg_gen_xor_i32(tmp, tmp, tmp2);
-            tcg_temp_free_i32(tmp2);
-            tcg_gen_brcondi_i32(TCG_COND_GE, tmp, 0, label);
-            gen_set_label(inv);
-            break;
         case 13: /* le: Z || N != V */
-            tmp = load_cpu_field(ZF);
-            tcg_gen_brcondi_i32(TCG_COND_EQ, tmp, 0, label);
-            tcg_temp_free_i32(tmp);
+            cond = TCG_COND_NE;
+            value = tcg_temp_new_i32();
             tmp = load_cpu_field(VF);
             tmp2 = load_cpu_field(NF);
-            tcg_gen_xor_i32(tmp, tmp, tmp2);
+            /* (N == V) is equal to the sign bit of ~(NF ^ VF).  Propagate
+            * the sign bit then AND with ZF to yield the result.  */
+            tcg_gen_xor_i32(value, tmp, tmp2);
+            tcg_gen_sari_i32(value, value, 31);
+            tcg_temp_free_i32(tmp);
             tcg_temp_free_i32(tmp2);
-            tcg_gen_brcondi_i32(TCG_COND_LT, tmp, 0, label);
+            tmp = load_cpu_field(ZF);
+            tcg_gen_andc_i32(value, tmp, value);
+            tcg_temp_free_i32(tmp);
             break;
+        case 14: /* always */
+        case 15: /* always */
+            /* Use the ALWAYS condition, which will fold early.
+            * It doesn't matter what we use for the value.  */
+            cond = TCG_COND_ALWAYS;
+            value = load_cpu_field(ZF);
+            goto no_invert;
         default:
             fprintf(stderr, "Bad condition code 0x%x\n", cc);
             abort();
     }
-    tcg_temp_free_i32(tmp);
+
+    if (cc & 1) {
+        cond = tcg_invert_cond(cond);
+    }
+
+ no_invert:
+    tcg_gen_brcondi_i32(cond, value, 0, label);
+    tcg_temp_free_i32(value);
 }
 
 static const uint8_t table_logic_cc[16] = {
