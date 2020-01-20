@@ -538,7 +538,13 @@ tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr) {
         cpu_ldub_code(env1, addr);
     }
     pd = env1->iotlb[mmu_idx][page_index] & ~TARGET_PAGE_MASK;
+#if defined(TARGET_I386) || defined(TARGET_X86_64)
     if (!mem_desc_find(pd)) {
+#elif defined(TARGET_ARM)
+    if (!mem_desc_find(addr)) {
+#else
+#error Unsupported target architecture
+#endif
 #if defined(TARGET_ALPHA) || defined(TARGET_MIPS) || defined(TARGET_SPARC)
         cpu_unassigned_access(env1, addr, 0, 1, 0, 4);
 #else
