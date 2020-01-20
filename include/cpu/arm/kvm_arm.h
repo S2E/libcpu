@@ -82,6 +82,12 @@ struct kvm_m_sregs {
     void *nvic;
 };
 
+struct kvm_m_vcpu_init {
+    __u32 entry;
+    __u32 msp_init;
+    __u32 vtor;
+};
+
 /* Supported Processor Types */
 #define KVM_ARM_TARGET_CORTEX_A15 0
 #define KVM_ARM_TARGET_CORTEX_A7 1
