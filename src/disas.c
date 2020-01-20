@@ -18,7 +18,14 @@
 #include <string.h>
 
 #include <cpu/config.h>
+#if defined(TARGET_I386)
 #include <cpu/i386/cpu.h>
+#elif defined(TARGET_ARM)
+#include <cpu/arm/cpu.h>
+#else
+#error unsupported target CPU
+#endif
+
 
 #include <cpu/disas.h>
 #include <cpu/memdbg.h>
