@@ -9553,7 +9553,6 @@ illegal_op:
 static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
     uint32_t val, insn, op, rm, rn, rd, shift, cond;
     int32_t offset;
-    uint32_t k, count; // only used for counting the number of reglist when poping with pc
     int i;
     TCGv tmp;
     TCGv tmp2;
@@ -9703,8 +9702,9 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                         } else {
                             gen_bx(s, tmp);
                             if (env->v7m.exception != 0 && IS_M(env) && env->regs[14] >= 0xfffffff0) {
-                                gen_exception(EXCP_EXCEPTION_EXIT);
-                                s->is_jmp = DISAS_UPDATE;
+                                //gen_exception(EXCP_EXCEPTION_EXIT);
+                                //s->is_jmp = DISAS_UPDATE;
+                                s->is_jmp = DISAS_BX_EXCRET;
                             }
                         }
                         break;
@@ -10079,17 +10079,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                         // To find how many other regs pop with pc
                         TPRINTF("pc = 0x%x sp = 0x%x \n", env->regs[15], env->regs[13]);
                         if (env->v7m.exception != 0 && IS_M(env)) {
-                            count = 0;
-                            for (k = 0; k < 8; k++) {
-                                if ((insn & (1 << k)) != 0)
-                                    count++;
-                            }
-                            val = ldl_phys(RR_cpu(env,regs[13]) + count * 4);
-                            // if pop pc is EXC_RETURN invode interrupt exit.
-                            if (val >= 0xfffffff0) {
-                                gen_exception(EXCP_EXCEPTION_EXIT);
-                                s->is_jmp = DISAS_UPDATE;
-                            }
+                            s->is_jmp = DISAS_BX_EXCRET;
                         }
                     }
                     break;
@@ -10545,28 +10535,42 @@ static inline void gen_intermediate_code_internal(CPUARMState *env, TranslationB
            Hardware breakpoints have already been handled and skip this code.
          */
         gen_set_condexec(dc);
-        switch (dc->is_jmp) {
-            case DISAS_NEXT:
-                gen_goto_tb(dc, 1, dc->pc);
-                break;
-            default:
-            case DISAS_JUMP:
-            case DISAS_UPDATE:
+        if (dc->is_jmp == DISAS_BX_EXCRET) {
+            /* Generate the code to finish possible exception return and end the TB */
+            TCGLabel *excret_label = gen_new_label();
+            /* Is the new PC value in the magic range indicating exception return? */
+            tcg_gen_brcondi_i32(TCG_COND_GEU, cpu_R[15], 0xff000000, excret_label);
 #ifdef CONFIG_SYMBEX
-                gen_eob_event(dc, 0, 0);
+            gen_eob_event(dc, 0, 0);
 #endif
-                /* indicate that the hash table must be used to find the next TB */
-                tcg_gen_exit_tb(NULL, 0);
-                break;
-            case DISAS_TB_JUMP:
-                /* nothing more to generate */
-                break;
-            case DISAS_WFI:
-                gen_helper_wfi();
-                break;
-            case DISAS_SWI:
-                gen_exception(EXCP_SWI);
-                break;
+            /* No: end the TB as we would for a DISAS_JMP */
+            tcg_gen_exit_tb(NULL, 0);
+            gen_set_label(excret_label);
+            gen_exception(EXCP_EXCEPTION_EXIT);
+        } else {
+            switch (dc->is_jmp) {
+                case DISAS_NEXT:
+                    gen_goto_tb(dc, 1, dc->pc);
+                    break;
+                default:
+                case DISAS_JUMP:
+                case DISAS_UPDATE:
+#ifdef CONFIG_SYMBEX
+                    gen_eob_event(dc, 0, 0);
+#endif
+                    /* indicate that the hash table must be used to find the next TB */
+                    tcg_gen_exit_tb(NULL, 0);
+                    break;
+                case DISAS_TB_JUMP:
+                    /* nothing more to generate */
+                    break;
+                case DISAS_WFI:
+                    gen_helper_wfi();
+                    break;
+                case DISAS_SWI:
+                    gen_exception(EXCP_SWI);
+                    break;
+            }
         }
         if (dc->condjmp) {
             gen_set_label(dc->condlabel);

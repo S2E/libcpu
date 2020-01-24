@@ -42,6 +42,13 @@ extern struct cpu_stats_t g_cpu_stats;
 #define DISAS_JUMP 1    /* only pc was modified dynamically */
 #define DISAS_UPDATE 2  /* cpu state was modified dynamically */
 #define DISAS_TB_JUMP 3 /* only pc was modified statically */
+#define DISAS_BX_EXCRET 8
+/* For instructions which want an immediate exit to the main loop,
+ * as opposed to attempting to use lookup_and_goto_ptr. Unlike
+ * DISAS_UPDATE this doesn't write the PC on exiting the translation
+ * loop so you need to ensure something (gen_a64_set_pc_im or runtime
+ * helper) has done so before we reach return from cpu_tb_exec.
+ */
 
 #ifdef STATIC_TRANSLATOR
 /* Accomodate large TBs */
