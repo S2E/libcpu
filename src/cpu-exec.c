@@ -486,9 +486,11 @@ static int process_exceptions(CPUArchState *env) {
             cpu_handle_debug_exception(env);
         }
     } else {
-        DPRINTF("  do_interrupt exidx=%x\n", env->exception_index);
-        do_interrupt(env);
-        env->exception_index = -1;
+        if (env->exception_index != 5) {
+            DPRINTF("  do_interrupt exidx=%x\n", env->exception_index);
+            do_interrupt(env);
+            env->exception_index = -1;
+        }
     }
 
     return ret;
