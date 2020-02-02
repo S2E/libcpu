@@ -9550,6 +9550,14 @@ illegal_op:
     return 1;
 }
 
+void instr_gen_pc_update(void *context, target_ulong pc);
+void instr_gen_pc_update(void *context, target_ulong pc) {
+    TCGv_i32 cpu_tmp0 = tcg_temp_new_i32();
+    tcg_gen_movi_i32(cpu_tmp0, pc);
+    tcg_gen_st_i32(cpu_tmp0, cpu_env, offsetof(CPUArchState, regs[15]));
+    tcg_temp_free_i32(cpu_tmp0);
+}
+
 static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
     uint32_t val, insn, op, rm, rn, rd, shift, cond;
     int32_t offset;
