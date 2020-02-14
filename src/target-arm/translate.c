@@ -9709,7 +9709,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                             gen_bx(s, tmp);
                         } else {
                             gen_bx(s, tmp);
-                            if (env->v7m.exception != 0 && IS_M(env) && env->regs[14] >= 0xfffffff0) {
+                            if (env->v7m.exception != 0 && IS_M(env)) {
                                 //gen_exception(EXCP_EXCEPTION_EXIT);
                                 //s->is_jmp = DISAS_UPDATE;
                                 s->is_jmp = DISAS_BX_EXCRET;
