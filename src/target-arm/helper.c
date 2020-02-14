@@ -745,6 +745,8 @@ static void do_v7m_exception_exit(CPUARMState *env) {
     WR_cpu(env,regs[12],v7m_pop(env));
     WR_cpu(env,regs[14],v7m_pop(env));
     env->regs[15] = v7m_pop(env);
+    //thumb2 remove LSB
+    env->regs[15] = env->regs[15] & ~1;
     xpsr = v7m_pop(env);
     xpsr_write(env, xpsr, 0xfffffdff);
     /* Undo stack alignment.  */
