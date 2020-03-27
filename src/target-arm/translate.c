@@ -8694,6 +8694,9 @@ static int disas_thumb2_insn(CPUARMState *env, DisasContext *s, uint16_t insn_hw
                             tmp = gen_ld32(addr, IS_USER(s));
                             if (i == 15) {
                                 gen_bx(s, tmp);
+                                if (IS_M(env)) {
+                                    s->is_jmp = DISAS_BX_EXCRET;
+                                }
                             } else if (i == rn) {
                                 loaded_var = tmp;
                                 loaded_base = 1;
@@ -9709,9 +9712,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                             gen_bx(s, tmp);
                         } else {
                             gen_bx(s, tmp);
-                            if (env->v7m.exception != 0 && IS_M(env)) {
-                                //gen_exception(EXCP_EXCEPTION_EXIT);
-                                //s->is_jmp = DISAS_UPDATE;
+                            if (IS_M(env)) {
                                 s->is_jmp = DISAS_BX_EXCRET;
                             }
                         }
@@ -10086,7 +10087,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                         store_reg_from_load(env, s, 15, tmp);
                         // To find how many other regs pop with pc
                         TPRINTF("pc = 0x%x sp = 0x%x \n", env->regs[15], env->regs[13]);
-                        if (env->v7m.exception != 0 && IS_M(env)) {
+                        if (IS_M(env)) {
                             s->is_jmp = DISAS_BX_EXCRET;
                         }
                     }
