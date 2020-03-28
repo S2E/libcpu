@@ -711,6 +711,7 @@ static void do_v7m_exception_exit(CPUARMState *env) {
     HPRINTF(" R3=0x%x R4=0x%x R5=0x%x R6=0x%x R7=0x%x R8=0x%x R9=0x%x R10=0x%x R11=0x%x R12=0x%x R2=0x%x R1=0x%x R0=0x%x\n",
                 RR_cpu(env,regs[3]), RR_cpu(env,regs[4]),  RR_cpu(env,regs[5]), RR_cpu(env,regs[6]), RR_cpu(env,regs[7]),  RR_cpu(env,regs[8]),
                 RR_cpu(env,regs[9]),  RR_cpu(env,regs[10]), RR_cpu(env,regs[11]), RR_cpu(env,regs[12]), RR_cpu(env,regs[2]), RR_cpu(env,regs[1]),  RR_cpu(env,regs[0]));
+    env->interrupt_flag = 0;
     /* ??? The exception return type specifies Thread/Handler mode.  However
        this is also implied by the xPSR value. Not sure what to do
        if there is a mismatch.  */
@@ -746,6 +747,7 @@ void do_interrupt_v7m(CPUARMState *env) {
         case EXCP_SWI:
             /* The PC already points to the next instruction.  */
             armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_SVC, false);
+            env->interrupt_flag = 2;
             return;
         case EXCP_PREFETCH_ABORT:
         case EXCP_DATA_ABORT:
@@ -769,6 +771,7 @@ void do_interrupt_v7m(CPUARMState *env) {
             armv7m_nvic_acknowledge_irq(env->nvic);
             env->v7m.exception = exc;
             *exception = exc;
+            env->interrupt_flag = 1;
             break;
         case EXCP_EXCEPTION_EXIT:
             do_v7m_exception_exit(env);

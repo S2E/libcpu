@@ -79,6 +79,7 @@ struct se_libcpu_interface_t {
         const int *allow_custom_instructions;
         const int *concretize_io_writes;
         const int *concretize_io_addresses;
+        const int *allow_interrupt;
     } mode;
 
     struct exec {

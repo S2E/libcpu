@@ -451,7 +451,8 @@ static bool process_interrupt_request(CPUArchState *env) {
     if ((interrupt_request & CPU_INTERRUPT_HARD) &&
         ((IS_M(env) && env->regs[15] < 0xfffffff0) || !(env->uncached_cpsr & CPSR_I))) {
         if ((armv7m_nvic_can_take_pending_exception(env->nvic))) {
-            if (likely(*g_sqi.mode.fast_concrete_invocation && **g_sqi.mode.running_concrete)) {
+            if (likely(*g_sqi.mode.fast_concrete_invocation && **g_sqi.mode.running_concrete && *g_sqi.mode.allow_interrupt)
+                || unlikely(*g_sqi.mode.allow_interrupt == 2)) {
                 env->exception_index = EXCP_IRQ;
                 do_interrupt(env);
                 has_interrupt = true;
