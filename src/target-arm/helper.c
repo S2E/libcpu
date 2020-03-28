@@ -821,6 +821,21 @@ void do_interrupt_v7m(CPUARMState *env) {
 
 #ifdef CONFIG_SYMBEX
 #include <cpu/se_libcpu.h>
+uint32_t se_helper_get_active_armv7m_external_irq(CPUArchState *env, int serial) {
+    return armv7m_nvic_get_active_external_irq(env->nvic, serial);
+}
+
+void se_helper_set_armv7m_external_irq(CPUARMState *env, int irq_num) {
+    armv7m_nvic_set_external_peripheral_irq(env->nvic, irq_num, 1);
+}
+
+void se_helper_enable_all_armv7m_external_irq(CPUARMState *env, int serial) {
+    armv7m_nvic_enable_all_external_irq(env->nvic, serial, 1);
+}
+
+void se_helper_enable_systick_irq(CPUARMState *env, int mode) {
+    armv7m_nvic_enable_systick(env->nvic, mode);
+}
 /* This will be called from S2EExecutor if running concretely; It will
    in turn call the real ARM IRQ handler with current CPUARMState.*/
 void do_interrupt(CPUARMState *env) {

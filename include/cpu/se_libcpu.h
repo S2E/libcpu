@@ -54,7 +54,16 @@ typedef void (*se_do_interrupt_arm_t)(void);
 void se_do_interrupt_all(int intno, int is_int, int error_code, target_ulong next_eip, int is_hw);
 #elif defined(TARGET_ARM)
 void se_do_interrupt_arm(void);
+void se_set_armv7m_external_irq(int irq_num);
+void se_enable_all_armv7m_external_irq(int serial);
+void se_enable_systick_irq(int mode);
+uint32_t se_get_active_armv7m_external_irq(int serial);
+
 void se_helper_do_interrupt_arm(CPUArchState *env);
+void se_helper_set_armv7m_external_irq(CPUArchState *env, int irq_num);
+void se_helper_enable_all_armv7m_external_irq(CPUArchState *env, int serial);
+void se_helper_enable_systick_irq(CPUArchState *env, int mode);
+uint32_t se_helper_get_active_armv7m_external_irq(CPUArchState *env, int serial);
 #else
 #error Unsupported target architecture
 #endif

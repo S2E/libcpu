@@ -94,6 +94,22 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def, uint32_t rn, uint32_t max
 
 /* This will be called from S2EExecutor if running concretely; It will
    in turn call the real ARM IRQ handler with current CPUARMState.*/
+uint32_t se_get_active_armv7m_external_irq(int serial) {
+    return se_helper_get_active_armv7m_external_irq(env, serial);
+}
+
+void se_set_armv7m_external_irq(int irq_num) {
+    se_helper_set_armv7m_external_irq(env, irq_num);
+    cpu_exit(env);//exit cpu loop to invoke the interrupt immediately
+}
+
+void se_enable_all_armv7m_external_irq(int serial) {
+    se_helper_enable_all_armv7m_external_irq(env, serial);
+}
+
+void se_enable_systick_irq(int mode) {
+    se_helper_enable_systick_irq(env, mode);
+}
 void se_do_interrupt_arm(void)
 {
     se_helper_do_interrupt_arm(env);
