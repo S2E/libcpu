@@ -210,7 +210,7 @@ typedef struct CPUARMState {
     int kvm_request_interrupt_window;
     int kvm_irq;
     uint8_t timer_interrupt_disabled;
-    uint64_t interrupt_flag; //indicate in interrupt or not
+    int interrupt_flag; //indicate in interrupt or not
 
 } CPUARMState;
 CPUARMState *cpu_arm_init(const char *cpu_model);

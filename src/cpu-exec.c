@@ -450,15 +450,16 @@ static bool process_interrupt_request(CPUArchState *env) {
     // in case basepri has not been synced  so add exit code condition
     if ((interrupt_request & CPU_INTERRUPT_HARD) &&
         ((IS_M(env) && env->regs[15] < 0xfffffff0) || !(env->uncached_cpsr & CPSR_I))) {
-        if ((armv7m_nvic_can_take_pending_exception(env->nvic))) {
+        int irq_num;
+        if ((armv7m_nvic_can_take_pending_exception(env->nvic, &irq_num))) {
             if (likely(*g_sqi.mode.fast_concrete_invocation && **g_sqi.mode.running_concrete && *g_sqi.mode.allow_interrupt)
-                || unlikely(*g_sqi.mode.allow_interrupt == 2)) {
+                || unlikely(*g_sqi.mode.allow_interrupt == 2) || unlikely(irq_num != 15)) {
                 env->exception_index = EXCP_IRQ;
                 do_interrupt(env);
                 has_interrupt = true;
             }
         } else {
-            DPRINTF("cpu basepri = %d take_exc = %d\n", env->v7m.basepri, armv7m_nvic_can_take_pending_exception(env->nvic));
+            DPRINTF("cpu basepri = %d take_exc = \n", env->v7m.basepri);
         }
     }
 #endif
