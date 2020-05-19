@@ -25,7 +25,7 @@
 #include <tcg/tcg-op.h>
 #include <tcg/utils/host-utils.h>
 
-#define DEBUG_HELPER
+//#define DEBUG_HELPER
 
 #ifdef DEBUG_HELPER
 #define HPRINTF(...) printf(__VA_ARGS__)
