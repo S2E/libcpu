@@ -426,7 +426,9 @@ void glue(glue(io_write, SUFFIX), MMUSUFFIX)(CPUArchState *env, target_phys_addr
     SE_SET_MEM_IO_VADDR(env, addr, 0);
     env->mem_io_pc = (uintptr_t) retaddr;
 
+#ifdef CONFIG_SYMBEX
     if (likely(!g_sqi.mem.is_mmio_symbolic(addr, DATA_SIZE))) {
+#endif
 #if SHIFT <= 2
         ops->write(physaddr, val, 1 << SHIFT);
 #else
@@ -438,7 +440,9 @@ void glue(glue(io_write, SUFFIX), MMUSUFFIX)(CPUArchState *env, target_phys_addr
         ops->write(physaddr + 4, val >> 32, 4);
 #endif
 #endif /* SHIFT > 2 */
+#ifdef CONFIG_SYMBEX
     }
+#endif
 }
 
 void glue(glue(io_write_chk, SUFFIX), MMUSUFFIX)(CPUArchState *env, target_phys_addr_t physaddr, DATA_TYPE val,
