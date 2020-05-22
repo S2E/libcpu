@@ -4,10 +4,6 @@
 # Make sure we include any source files in the target-specific directory
 file(GLOB TARGET_SRC_FILES ${TARGET_DIR}/*.c)
 
-if(NOT DEFINED ENV{S2EDIR})
-    message(FATAL_ERROR "not defined environment variable:S2EDIR")  
-endif()
-
 add_library(cpu cpu-exec.c
                 cpus.c
                 exec.c
@@ -32,7 +28,7 @@ target_include_directories(cpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                       ${CMAKE_SOURCE_DIR}/include
                                       ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_DIR}
                                       ${CMAKE_BINARY_DIR}/include
-                                      $ENV{S2EDIR}/qemu/include/nvic)
+                                      ${CMAKE_SOURCE_DIR}/../qemu/include/nvic)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__STDC_FORMAT_MACROS -D_GNU_SOURCE -DNEED_CPU_H  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DTARGET_PHYS_ADDR_BITS=64")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fPIC -fno-omit-frame-pointer")
