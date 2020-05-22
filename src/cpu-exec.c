@@ -452,12 +452,16 @@ static bool process_interrupt_request(CPUArchState *env) {
         ((IS_M(env) && env->regs[15] < 0xfffffff0) || !(env->uncached_cpsr & CPSR_I))) {
         int irq_num;
         if ((armv7m_nvic_can_take_pending_exception(env->nvic, &irq_num))) {
+#ifdef CONFIG_SYMBEX
             if (likely(*g_sqi.mode.fast_concrete_invocation && **g_sqi.mode.running_concrete && *g_sqi.mode.allow_interrupt)
                 || unlikely(*g_sqi.mode.allow_interrupt == 2) || unlikely(irq_num != 15)) {
+#endif
                 env->exception_index = EXCP_IRQ;
                 do_interrupt(env);
                 has_interrupt = true;
+#ifdef CONFIG_SYMBEX
             }
+#endif
         } else {
             DPRINTF("cpu basepri = %d take_exc = \n", env->v7m.basepri);
         }
