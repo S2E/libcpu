@@ -4,6 +4,10 @@
 # Make sure we include any source files in the target-specific directory
 file(GLOB TARGET_SRC_FILES ${TARGET_DIR}/*.c)
 
+if(NOT DEFINED ENV{S2EDIR})
+    message(FATAL_ERROR "not defined environment variable:S2EDIR")  
+endif()
+
 add_library(cpu cpu-exec.c
                 cpus.c
                 exec.c
