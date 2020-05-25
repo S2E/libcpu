@@ -35,7 +35,7 @@
 #include <cpu/se_libcpu.h>
 #endif
 
-#define DEBUG_TS
+//#define DEBUG_TS
 
 #ifdef DEBUG_TS
 #define TPRINTF(...) printf(__VA_ARGS__)
