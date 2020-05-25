@@ -769,7 +769,7 @@ void do_interrupt_v7m(CPUARMState *env) {
             return;
         case EXCP_IRQ:
             armv7m_nvic_get_pending_irq_info(env->nvic, &exc, &targets_secure);
-            armv7m_nvic_acknowledge_irq(env->nvic);
+            armv7m_nvic_acknowledge_irq(env->nvic, exc);
             env->v7m.exception = exc;
             *exception = exc;
             env->interrupt_flag += 1;
