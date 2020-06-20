@@ -463,7 +463,7 @@ static bool process_interrupt_request(CPUArchState *env) {
             }
 #endif
         } else {
-            DPRINTF("cpu basepri = %d take_exc = \n", env->v7m.basepri);
+            DPRINTF("cpu basepri = %d irq num = %d\n", env->v7m.basepri, irq_num);
         }
     }
 #endif
