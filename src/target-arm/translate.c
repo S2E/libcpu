@@ -10585,7 +10585,9 @@ static inline void gen_intermediate_code_internal(CPUARMState *env, TranslationB
                     /* nothing more to generate */
                     break;
                 case DISAS_WFI:
-                    gen_helper_wfi();
+                    // donot sleep
+                    gen_goto_tb(dc, 1, dc->pc);
+                    //gen_helper_wfi();
                     break;
                 case DISAS_SWI:
                     gen_exception(EXCP_SWI);
