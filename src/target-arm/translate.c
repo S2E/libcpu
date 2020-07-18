@@ -835,7 +835,7 @@ static const uint8_t table_logic_cc[16] = {
 /* Set PC and Thumb state from an immediate address.  */
 static inline void gen_bx_im(DisasContext *s, uint32_t addr) {
     TCGv tmp;
-
+    SET_TB_TYPE(TB_CALL_IND);
     s->is_jmp = DISAS_UPDATE;
     if (s->thumb != (addr & 1)) {
         tmp = tcg_temp_new_i32();
@@ -7290,6 +7290,7 @@ static void disas_arm_insn(CPUARMState *env, DisasContext *s) {
         s->condlabel = gen_new_label();
         gen_test_cc(cond ^ 1, s->condlabel);
         s->condjmp = 1;
+        SET_TB_TYPE(TB_COND_JMP);
     }
     if ((insn & 0x0f900000) == 0x03000000) {
         if ((insn & (1 << 21)) == 0) {
@@ -8350,6 +8351,7 @@ static void disas_arm_insn(CPUARMState *env, DisasContext *s) {
                 }
                 offset = (((int32_t) insn << 8) >> 8);
                 val += (offset << 2) + 4;
+                SET_TB_TYPE(TB_JMP);
                 gen_jmp(s, val);
             } break;
             case 0xc:
@@ -8693,6 +8695,7 @@ static int disas_thumb2_insn(CPUARMState *env, DisasContext *s, uint16_t insn_hw
                             /* Load.  */
                             tmp = gen_ld32(addr, IS_USER(s));
                             if (i == 15) {
+                                SET_TB_TYPE(TB_RET);
                                 gen_bx(s, tmp);
                                 if (IS_M(env)) {
                                     s->is_jmp = DISAS_BX_EXCRET;
@@ -9096,6 +9099,7 @@ static int disas_thumb2_insn(CPUARMState *env, DisasContext *s, uint16_t insn_hw
                     offset += s->pc;
                     if (insn & (1 << 12)) {
                         /* b/bl */
+                        SET_TB_TYPE(TB_CALL);
                         gen_jmp(s, offset);
                     } else {
                         /* blx */
@@ -9218,6 +9222,7 @@ static int disas_thumb2_insn(CPUARMState *env, DisasContext *s, uint16_t insn_hw
                     s->condlabel = gen_new_label();
                     gen_test_cc(op ^ 1, s->condlabel);
                     s->condjmp = 1;
+                    SET_TB_TYPE(TB_COND_JMP);
 
                     /* offset[11:1] = insn[10:0] */
                     offset = (insn & 0x7ff) << 1;
@@ -9231,6 +9236,7 @@ static int disas_thumb2_insn(CPUARMState *env, DisasContext *s, uint16_t insn_hw
                     offset |= (insn & (1 << 11)) << 8;
 
                     /* jump to the offset */
+                    SET_TB_TYPE(TB_JMP);
                     gen_jmp(s, s->pc + offset);
                 }
             } else {
@@ -9575,6 +9581,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
             s->condlabel = gen_new_label();
             gen_test_cc(cond ^ 1, s->condlabel);
             s->condjmp = 1;
+            SET_TB_TYPE(TB_COND_JMP);
         }
     }
 
@@ -9706,6 +9713,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                         if (insn & (1 << 7)) {
                             ARCH(5);
                             val = (uint32_t) s->pc | 1;
+                            SET_TB_TYPE(TB_CALL_IND);
                             tmp2 = tcg_temp_new_i32();
                             tcg_gen_movi_i32(tmp2, val);
                             store_reg(s, 14, tmp2);
@@ -10084,8 +10092,8 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                     store_reg(s, 13, addr);
                     /* set the new PC value */
                     if ((insn & 0x0900) == 0x0900) {
+                        SET_TB_TYPE(TB_RET);
                         store_reg_from_load(env, s, 15, tmp);
-                        // To find how many other regs pop with pc
                         TPRINTF("pc = 0x%x sp = 0x%x \n", env->regs[15], env->regs[13]);
                         if (IS_M(env)) {
                             s->is_jmp = DISAS_BX_EXCRET;
@@ -10109,6 +10117,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
                     offset = ((insn & 0xf8) >> 2) | (insn & 0x200) >> 3;
                     val = (uint32_t) s->pc + 2;
                     val += offset;
+                    SET_TB_TYPE(TB_JMP);
                     gen_jmp(s, val);
                     break;
 
@@ -10257,6 +10266,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
             val = (uint32_t) s->pc + 2;
             offset = ((int32_t) insn << 24) >> 24;
             val += offset << 1;
+            SET_TB_TYPE(TB_JMP);
             gen_jmp(s, val);
             break;
 
@@ -10270,6 +10280,7 @@ static void disas_thumb_insn(CPUARMState *env, DisasContext *s) {
             val = (uint32_t) s->pc;
             offset = ((int32_t) insn << 21) >> 21;
             val += (offset << 1) + 2;
+            SET_TB_TYPE(TB_JMP);
             gen_jmp(s, val);
             break;
 
