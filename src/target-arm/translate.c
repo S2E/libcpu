@@ -9099,7 +9099,9 @@ static int disas_thumb2_insn(CPUARMState *env, DisasContext *s, uint16_t insn_hw
                     offset += s->pc;
                     if (insn & (1 << 12)) {
                         /* b/bl */
-                        SET_TB_TYPE(TB_CALL);
+                        if (insn & (1 << 14)) { // exclude b.w caller
+                            SET_TB_TYPE(TB_CALL);
+                        }
                         gen_jmp(s, offset);
                     } else {
                         /* blx */
