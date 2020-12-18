@@ -217,6 +217,7 @@ struct se_libcpu_interface_t {
         unsigned *on_privilege_change_signals_count;
         unsigned *on_page_directory_change_signals_count;
         unsigned *on_call_return_signals_count;
+        unsigned *on_invalid_pc_access_signals_count;
 
         void (*on_privilege_change)(unsigned previous, unsigned current);
         void (*on_page_directory_change)(uint64_t previous, uint64_t current);
@@ -268,6 +269,8 @@ struct se_libcpu_interface_t {
                                              uint64_t writeMask, int isMemoryAccess);
 
         int (*on_call_return_translate)(uint64_t pc, int isCall);
+
+        void (*on_invalid_pc_access)(uint64_t addr);
     } events;
 
     struct {
