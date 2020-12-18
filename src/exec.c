@@ -542,6 +542,9 @@ tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr) {
     if (!mem_desc_find(pd)) {
 #elif defined(TARGET_ARM)
     if (!mem_desc_find(addr)) {
+        if (unlikely(*g_sqi.events.on_invalid_pc_access_signals_count)) {
+            g_sqi.events.on_invalid_pc_access(addr);
+        }
 #else
 #error Unsupported target architecture
 #endif
