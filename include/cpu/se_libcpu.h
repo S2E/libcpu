@@ -211,6 +211,7 @@ struct se_libcpu_interface_t {
         unsigned *on_translate_instruction_end_signals_count;
         unsigned *on_translate_register_access_signals_count;
         unsigned *on_exception_signals_count;
+        unsigned *on_exception_exit_signals_count;
         unsigned *on_page_fault_signals_count;
         unsigned *on_tlb_miss_signals_count;
         unsigned *on_port_access_signals_count;
@@ -271,6 +272,8 @@ struct se_libcpu_interface_t {
         int (*on_call_return_translate)(uint64_t pc, int isCall);
 
         void (*on_invalid_pc_access)(uint64_t addr);
+
+        void (*on_armv7m_interrupt_exit)(uint64_t irqNo);
     } events;
 
     struct {
