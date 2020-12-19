@@ -684,8 +684,10 @@ static void switch_v7m_sp(CPUARMState *env, int process) {
 static void do_v7m_exception_exit(CPUARMState *env) {
     uint32_t type;
     uint32_t xpsr;
+    uint32_t irq_no;
 
     type = env->regs[15];
+    irq_no = env->v7m.exception;
     if (env->v7m.exception != 0)
         armv7m_nvic_complete_irq(env->nvic, env->v7m.exception, false);
 
@@ -713,6 +715,9 @@ static void do_v7m_exception_exit(CPUARMState *env) {
     if (env->interrupt_flag > 0)
         env->interrupt_flag -= 1;
     HPRINTF(" interrupt exit r13 = 0x%x r15 = 0x%x flag = %d\n", env->regs[13], env->regs[15], env->interrupt_flag);
+    if (unlikely(*g_sqi.events.on_invalid_pc_access_signals_count)) {
+        g_sqi.events.on_armv7m_interrupt_exit(irq_no);
+    }
     /* ??? The exception return type specifies Thread/Handler mode.  However
        this is also implied by the xPSR value. Not sure what to do
        if there is a mismatch.  */
